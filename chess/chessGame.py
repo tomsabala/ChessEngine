@@ -22,8 +22,8 @@ every piece load a related image from chess/Images/*
 
 
 def loadImages(images):
-    pieces = ["wp", "bp", "wr", "br", "wk", "bk", "wb", "bb", "wq", "bq", "wK", "bK"]  # all posiib, pieces
-    for i, piece in enumerate(pieces):  ### for each piece load his related image
+    pieces = ["wp", "bp", "wr", "br", "wk", "bk", "wb", "bb", "wq", "bq", "wK", "bK"]  # all possible, pieces
+    for i, piece in enumerate(pieces):  # for each piece load his related image
         images[piece] = p.transform.scale(p.image.load("Images/" + piece + ".png"),
                                           (square_size, square_size))
 
@@ -51,7 +51,7 @@ def main():
 
     """ tracking game driver """
     running = True  # boolean obj. game state end or not
-    square_selected = tuple()  # will save the wanted square to be move in each play turn
+    square_selected = tuple()  # will save the wanted square to be moved in each play turn
     curr_move = []  # will save the all play move, from square.... to square
     while running:
         for e in p.event.get():
@@ -71,7 +71,7 @@ def main():
                     if len(curr_move) == 1 and engine.board[row][col] == "---":
                         square_selected = tuple()
                         curr_move = []
-                    elif len(curr_move) == 2:  # if its the 2-nd move
+                    elif len(curr_move) == 2:  # if it's the 2-nd move
                         move = chs.Move(curr_move[0], curr_move[1], engine.board)
                         if move in validMoves:
                             print(move.getChessNotation())

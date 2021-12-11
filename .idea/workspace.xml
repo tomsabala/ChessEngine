@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="" />
+    <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chess/chessEngine.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/chessEngine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chess/chessGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/chessGame.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,7 +43,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/workspace/chess-plot" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -136,7 +140,13 @@
       <workItem from="1638209170728" duration="1317000" />
       <workItem from="1638250446980" duration="2674000" />
       <workItem from="1638270387500" duration="25482000" />
-      <workItem from="1638367651031" duration="14080000" />
+      <workItem from="1638367651031" duration="15528000" />
+      <workItem from="1638437111451" duration="1522000" />
+      <workItem from="1638702897856" duration="731000" />
+      <workItem from="1638783937067" duration="766000" />
+      <workItem from="1638820467468" duration="63000" />
+      <workItem from="1639080601039" duration="1261000" />
+      <workItem from="1639152109828" duration="9278000" />
     </task>
     <servers />
   </component>
@@ -145,13 +155,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/chess/chessGame.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="35" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -163,7 +166,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ChessEngine$main.coverage" NAME="main Coverage Results" MODIFIED="1638127364056" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1638434270996" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
+    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1639218347153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
     <SUITE FILE_PATH="coverage/ChessEngine$boardRepres.coverage" NAME="boardRepres Coverage Results" MODIFIED="1638127540027" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
