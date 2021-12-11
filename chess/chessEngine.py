@@ -112,28 +112,30 @@ class chessBoard:
         computing all valid games on board
         :return: an array of all possible valid move on board
         """
-        validPawnMove = np.array([])  # an empty array
+        whitePiecesToFunc = {"wp": self.legalPawnMoves, "wr": self.legalRookMoves, "wk": self.legalKnightMoves}
+        blackPiecesToFunc = {"bp": self.legalPawnMoves, "br": self.legalRookMoves, "bk": self.legalKnightMoves}
+        validMoves = np.array([])  # an empty array
         rul = Rules(self.board)  # an object for re-checking if a move is valid etc. king is on check
         if self.whiteTurn:  # computing all white pieces moves
             for piece, pos in self.whitePieces.items():  # for every piece from whites
-                if piece[:2] == "wp":  # refer to a white pawn type
-                    validPawnMove = self.legalPawnMoves(self.board, pos, validPawnMove)  # getting all pawn moves
+                if piece[:2] in whitePiecesToFunc:  # refer to a white pawn type
+                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](self.board, pos, validMoves)))  # getting all pawn moves
             # validation check
-            for move in validPawnMove:
+            for move in validMoves:
                 self.makeMove(move)  # apply move
                 if rul.isCheck(self.board, self.whitePieces["wK"], True):  # check for validation
-                    validPawnMove = validPawnMove.__delitem__(move)  # is not valid, delete
+                    validMoves = validMoves.__delitem__(move)  # is not valid, delete
                 self.undoMove()  # undo move
         else:  # same as the above, this time for a black piece move
             for piece, pos in self.blackPieces.items():
-                if piece[:2] == "bp":
-                    validPawnMove = self.legalPawnMoves(self.board, pos, validPawnMove, False)
-            for move in validPawnMove:
+                if piece[:2] in blackPiecesToFunc:
+                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](self.board, pos, validMoves, False)))
+            for move in validMoves:
                 self.makeMove(move)
                 if rul.isCheck(self.board, self.blackPieces["bK"], False):
-                    validPawnMove = validPawnMove.__delitem__(move)
+                    validMoves = validMoves.__delitem__(move)
                 self.undoMove()
-        return validPawnMove
+        return validMoves
 
     def legalPawnMoves(self, board, piece, validMoves, white=True):
         """
@@ -192,18 +194,93 @@ class chessBoard:
         return validMoves
 
     def legalRookMoves(self, board, piece, validMoves, white=True):
-        pass
+        """
+        computing all legal moves for a rook piece in the board
+        :param board: board game state
+        :param piece: position tuple
+        :param validMoves: an array of all valid moves
+        :param white: boolean type, true iff it is a white move turn
+        :return: validMoves after insertions
+        """
+        row, col = piece[0], piece[1]  # saving position
+        dirDict = {0: (1, 0), 1: (0, 1), 2: (-1, 0), 3: (0, -1)}  # dictionary of all possible directions for a rook
+        # (1, 0) = up, (-1, 0) = down, (0, 1) = right, (0, -1) = left
+        for i in range(4):  # for every direction do...
+            r, c = dirDict[i]  # picking dir
+            ind = 1
+            while 0 <= row + r*ind <= 7 and 0 <= col + c*ind <= 7:  # if position ahead is inside board
+                curPiece = board[row + r*ind][col + c*ind]  # picking piece in that position
+                if curPiece == "---":  # if it is un captured
+                    # create move and insert it
+                    newMove = Move((row, col), (row + r*ind, col + c*ind), board)
+                    validMoves = np.append(validMoves, newMove)
+                else:  # is captured by some piece
+                    # it is a white turn and the currPiece is white, or the same for black piece
+                    if (white and curPiece[0] == "w") or (not white and curPiece[0] == "b"):
+                        break
+                    # it is a white turn and the currPiece is black or the same for black piece
+                    if (white and curPiece[0] == "b") or (not white and curPiece[0] == "w"):
+                        newMove = Move((row, col), (row + r * ind, col + c * ind), board)
+                        validMoves = np.append(validMoves, newMove)
+                        break
+                ind += 1
+        return validMoves
 
     def legalKnightMoves(self, board, piece, validMoves, white=True):
-        pass
+        """
+        computing all legal moves for a knight piece in the board
+        :param board: board game state
+        :param piece: position tuple
+        :param validMoves: an array of all valid moves
+        :param white: boolean type, true iff it is a white move turn
+        :return: validMoves after insertions
+        """
+        row, col = piece[0], piece[1]  # saving position
+        # all ahead steps for a knight
+        knightMoves = {1: (1, 2), 2: (2, 1), 3: (1, -2), 4: (2, -1), 5: (-1, -2), 6: (-2, -1), 7: (-1, 2), 8: (-2, 1)}
+        for i in range(1, 9):  # iterate for every step in dictionary
+            r, c = knightMoves[i]  # saving steps
+            if 0 <= row + r <= 7 and 0 <= col + c <= 7:  # if ahead position is inside board
+                curPiece = board[row + r][col + c]  # picking piece in that position
+                # checking for a possible next position for a knight
+                if (white and curPiece[0] != "w") or (not white and curPiece[0] != "b"):
+                    newMove = Move((row, col), (row + r, col + c), board)
+                    validMoves = np.append(validMoves, newMove)
+        return validMoves
+
+
 
     def legalBishopMoves(self, board, piece, validMoves, white=True):
+        """
+        computing all legal moves for a bishop piece in the board
+        :param board: board game state
+        :param piece: position tuple
+        :param validMoves: an array of all valid moves
+        :param white: boolean type, true iff it is a white move turn
+        :return: validMoves after insertions
+        """
         pass
 
     def legalQueenMoves(self, board, piece, validMoves, white=True):
+        """
+        computing all legal moves for a queen piece in the board
+        :param board: board game state
+        :param piece: position tuple
+        :param validMoves: an array of all valid moves
+        :param white: boolean type, true iff it is a white move turn
+        :return: validMoves after insertions
+        """
         pass
 
     def legalKingMoves(self, board, piece, validMoves, white=True):
+        """
+        computing all legal moves for a rook piece in the board
+        :param board: board game state
+        :param piece: position tuple
+        :param validMoves: an array of all valid moves
+        :param white: boolean type, true iff it is a white move turn
+        :return: validMoves after insertions
+        """
         pass
 
 
