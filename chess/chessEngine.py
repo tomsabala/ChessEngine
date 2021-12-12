@@ -6,6 +6,14 @@ minimax
 and alpha beta pruning
 """
 import numpy as np
+"""
+left to do:
+    * add promotion to pawns
+    * end of game
+    * random player option
+    * en passant - use the log move property
+    * double castling
+"""
 
 
 class chessBoard:
@@ -31,6 +39,7 @@ class chessBoard:
         self.whitePieces = {"wr1": (7, 0), "wk1": (7, 1), "wb1": (7, 2), "wK": (7, 3), "wq": (7, 4), "wb2": (7, 5),
                             "wk2": (7, 6), "wr2": (7, 7), "wp1": (6, 0), "wp2": (6, 1), "wp3": (6, 2), "wp4": (6, 3),
                             "wp5": (6, 4), "wp6": (6, 5), "wp7": (6, 6), "wp8": (6, 7)}
+        self.Castle = {"bK": True, "br1": True, "br2": True, "wK": True, "wr1": True, "wr2": True}
         self.whiteTurn = True  # a boolean obj. for whose turn is it
         self.moveLog = np.array([])  # an array of all moves
 
@@ -39,7 +48,29 @@ class chessBoard:
         initial move as a play on the board
         """
         if move.castling:  # for a castling type move
-            pass
+            self.board[move.rowEnd][move.colEnd] = move.selectedPiece
+            if move.colEnd < move.colStart:
+                self.board[move.rowEnd][move.colEnd+1] = move.capturedPiece
+                self.board[move.rowStart][move.colStart] = "---"
+                self.board[move.rowStart][0] = "---"
+                if self.whiteTurn:
+                    self.whitePieces[move.selectedPiece] = move.rowEnd, move.colEnd
+                    self.whitePieces[move.capturedPiece] = move.rowEnd, move.colEnd+1
+                else:
+                    self.blackPieces[move.selectedPiece] = move.rowEnd, move.colEnd
+                    self.blackPieces[move.capturedPiece] = move.rowEnd, move.colEnd + 1
+            else:
+                self.board[move.rowEnd][move.colEnd-1] = move.capturedPiece
+                self.board[move.rowStart][move.colStart] = "---"
+                self.board[move.rowStart][7] = "---"
+                if self.whiteTurn:
+                    self.whitePieces[move.selectedPiece] = move.rowEnd, move.colEnd
+                    self.whitePieces[move.capturedPiece] = move.rowEnd, move.colEnd-1
+                else:
+                    self.blackPieces[move.selectedPiece] = move.rowEnd, move.colEnd
+                    self.blackPieces[move.capturedPiece] = move.rowEnd, move.colEnd - 1
+            self.Castle[move.capturedPiece] = False
+            self.Castle[move.selectedPiece] = False
         elif move.enPassant:  # for enPassant type move
             # updating board state
             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
@@ -63,6 +94,8 @@ class chessBoard:
                 self.blackPieces[move.selectedPiece] = move.rowEnd, move.colEnd
                 if move.capturedPiece in self.whitePieces.keys():
                     del self.whitePieces[move.capturedPiece]
+            if move.selectedPiece in self.Castle.keys():
+                self.Castle[move.selectedPiece] = False
         self.moveLog = np.append(self.moveLog, move)  # appending the move to memory
         self.whiteTurn = not self.whiteTurn  # switching turns
 
@@ -73,7 +106,29 @@ class chessBoard:
         if len(self.moveLog) > 0:  # there is a move to undo
             move = self.moveLog[-1]  # last move in the array
             if move.castling:
-                pass
+                self.board[move.rowStart][move.colStart] = move.selectedPiece
+                if move.colEnd < move.colStart:
+                    self.board[move.rowStart][0] = move.capturedPiece
+                    self.board[move.rowEnd][move.colEnd] = "---"
+                    self.board[move.rowEnd][move.colEnd + 1] = "---"
+                    if not self.whiteTurn:
+                        self.whitePieces[move.selectedPiece] = move.rowStart, move.colStart
+                        self.whitePieces[move.capturedPiece] = move.rowStart, 0
+                    else:
+                        self.blackPieces[move.selectedPiece] = move.rowStart, move.colStart
+                        self.blackPieces[move.capturedPiece] = move.rowStart, 0
+                else:
+                    self.board[move.rowStart][7] = move.capturedPiece
+                    self.board[move.rowEnd][move.colEnd] = "---"
+                    self.board[move.rowEnd][move.colEnd - 1] = "---"
+                    if not self.whiteTurn:
+                        self.whitePieces[move.selectedPiece] = move.rowStart, move.colStart
+                        self.whitePieces[move.capturedPiece] = move.rowEnd, 7
+                    else:
+                        self.blackPieces[move.selectedPiece] = move.rowStart, move.colStart
+                        self.blackPieces[move.capturedPiece] = move.rowStart, 7
+                self.Castle[move.capturedPiece] = True
+                self.Castle[move.selectedPiece] = True
             elif move.enPassant:  # for a enPassant type move
                 # updating board state
                 self.board[move.rowEnd][move.colEnd] = "---"
@@ -103,6 +158,8 @@ class chessBoard:
                         self.whitePieces[move.selectedPiece] = move.rowStart, move.colStart
                     else:
                         self.blackPieces[move.selectedPiece] = move.rowStart, move.colStart
+                if move.selectedPiece in self.Castle.keys():
+                    self.Castle[move.selectedPiece] = True
             # updating settings
             self.whiteTurn = not self.whiteTurn
             self.moveLog = np.delete(self.moveLog, len(self.moveLog) - 1)
@@ -112,96 +169,98 @@ class chessBoard:
         computing all valid games on board
         :return: an array of all possible valid move on board
         """
-        whitePiecesToFunc = {"wp": self.legalPawnMoves, "wr": self.legalRookMoves, "wk": self.legalKnightMoves}
-        blackPiecesToFunc = {"bp": self.legalPawnMoves, "br": self.legalRookMoves, "bk": self.legalKnightMoves}
+        whitePiecesToFunc = {"wp": self.legalPawnMoves, "wr": self.legalRookMoves, "wk": self.legalKnightMoves,
+                             "wb": self.legalBishopMoves, "wq": self.legalQueenMoves, "wK": self.legalKingMoves}
+        blackPiecesToFunc = {"bp": self.legalPawnMoves, "br": self.legalRookMoves, "bk": self.legalKnightMoves,
+                             "bb": self.legalBishopMoves, "bq": self.legalQueenMoves, "bK": self.legalKingMoves}
         validMoves = np.array([])  # an empty array
-        rul = Rules(self.board)  # an object for re-checking if a move is valid etc. king is on check
+        rul = Rules()  # an object for re-checking if a move is valid etc. king is on check
         if self.whiteTurn:  # computing all white pieces moves
             for piece, pos in self.whitePieces.items():  # for every piece from whites
                 if piece[:2] in whitePiecesToFunc:  # refer to a white pawn type
-                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](self.board, pos, validMoves)))  # getting all pawn moves
+                    # getting all pawn moves
+                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos)))
             # validation check
             for move in validMoves:
                 self.makeMove(move)  # apply move
                 if rul.isCheck(self.board, self.whitePieces["wK"], True):  # check for validation
-                    validMoves = validMoves.__delitem__(move)  # is not valid, delete
+                    validMoves = np.delete(validMoves, np.where(validMoves == move))  # is not valid, delete
                 self.undoMove()  # undo move
         else:  # same as the above, this time for a black piece move
             for piece, pos in self.blackPieces.items():
                 if piece[:2] in blackPiecesToFunc:
-                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](self.board, pos, validMoves, False)))
+                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False)))
             for move in validMoves:
                 self.makeMove(move)
                 if rul.isCheck(self.board, self.blackPieces["bK"], False):
-                    validMoves = validMoves.__delitem__(move)
+                    validMoves = np.delete(validMoves, np.where(validMoves == move))
                 self.undoMove()
         return validMoves
 
-    def legalPawnMoves(self, board, piece, validMoves, white=True):
+    def legalPawnMoves(self, piece, white=True):
         """
         func. computes all valid moves of a certain pawn
-        :param board: board state, etc. pieces and positions
         :param piece: pawn position tuple on board
-        :param validMoves: an array of all valid moves to insert in
         :param white: is boolean type for a white's turn or black
         :return: validMoves after insertion of all valid moves for piece pawn
         """
+        validMoves = np.array([])
         row, col = piece[0], piece[1]  # saving pawn position
         if white:  # white's position
             if row - 1 >= 0:  # if it can move forward
-                if board[row - 1][col] == "---":  # position one ahead is empty
-                    newMove = Move((row, col), (row - 1, col), board)  # create move
+                if self.board[row - 1][col] == "---":  # position one ahead is empty
+                    newMove = Move((row, col), (row - 1, col), self.board)  # create move
                     validMoves = np.append(validMoves, newMove)  # insert move
-                    if row == 6 and board[row - 2][col] == "---":  # pawn at initial position and two ahead is empty
-                        newMove = Move((row, col), (row - 2, col), board)
+                    # pawn at initial position and two ahead is empty
+                    if row == 6 and self.board[row - 2][col] == "---":
+                        newMove = Move((row, col), (row - 2, col), self.board)
                         validMoves = np.append(validMoves, newMove)
-                if 0 <= col - 1 and board[row - 1][col - 1][0] == "b":  # diagonal from left is with a black piece
-                    newMove = Move((row, col), (row - 1, col - 1), board)
+                if 0 <= col - 1 and self.board[row - 1][col - 1][0] == "b":  # diagonal from left is with a black piece
+                    newMove = Move((row, col), (row - 1, col - 1), self.board)
                     validMoves = np.append(validMoves, newMove)
-                if col + 1 <= 7 and board[row - 1][col + 1][0] == "b":  # diagonal from right is with a black piece
-                    newMove = Move((row, col), (row - 1, col + 1), board)
+                if col + 1 <= 7 and self.board[row - 1][col + 1][0] == "b":  # diagonal from right is with a black piece
+                    newMove = Move((row, col), (row - 1, col + 1), self.board)
                     validMoves = np.append(validMoves, newMove)
                 if row == 3:
                     # all 6 next lines refer to en Passant move
-                    if col - 1 >= 0 and board[row][col - 1][:2] == "bp":
-                        newMove = Move((row, col), (row - 1, col - 1), board, True)
+                    if col - 1 >= 0 and self.board[row][col - 1][:2] == "bp" and self.board[row-1][col-1] == "---":
+                        newMove = Move((row, col), (row - 1, col - 1), self.board, True)
                         validMoves = np.append(validMoves, newMove)
-                    if col + 1 <= 7 and board[row][col + 1][:2] == "bp":
-                        newMove = Move((row, col), (row - 1, col + 1), board, True)
+                    if col + 1 <= 7 and self.board[row][col + 1][:2] == "bp" and self.board[row-1][col+1] == "---":
+                        newMove = Move((row, col), (row - 1, col + 1), self.board, True)
                         validMoves = np.append(validMoves, newMove)
         else:  # it is a black move turn
             if row + 1 <= 7:  # can move forward
-                if board[row + 1][col] == "---":  # on ahead is empty
-                    newMove = Move((row, col), (row + 1, col), board)  # create move
+                if self.board[row + 1][col] == "---":  # on ahead is empty
+                    newMove = Move((row, col), (row + 1, col), self.board)  # create move
                     validMoves = np.append(validMoves, newMove)  # insert move
-                    if row == 1 and board[row + 2][col] == "---":  # pawn os on initial position two ahead is empty
-                        newMove = Move((row, col), (row + 2, col), board)
+                    if row == 1 and self.board[row + 2][col] == "---":  # pawn os on initial position two ahead is empty
+                        newMove = Move((row, col), (row + 2, col), self.board)
                         validMoves = np.append(validMoves, newMove)
-                if 0 <= col - 1 and board[row + 1][col - 1][0] == "w":  # diagonal from right is with a white piece
-                    newMove = Move((row, col), (row + 1, col - 1), board)
+                if 0 <= col - 1 and self.board[row + 1][col - 1][0] == "w":  # diagonal from right is with a white piece
+                    newMove = Move((row, col), (row + 1, col - 1), self.board)
                     validMoves = np.append(validMoves, newMove)
-                if col + 1 <= 7 and board[row + 1][col + 1][0] == "w":  # diagonal from left is with a white piece
-                    newMove = Move((row, col), (row + 1, col + 1), board)
+                if col + 1 <= 7 and self.board[row + 1][col + 1][0] == "w":  # diagonal from left is with a white piece
+                    newMove = Move((row, col), (row + 1, col + 1), self.board)
                     validMoves = np.append(validMoves, newMove)
                 if row == 4:
                     # all 6 next line refer to en Passant move
-                    if col - 1 >= 0 and board[row][col - 1][:2] == "wp":
-                        newMove = Move((row, col), (row + 1, col - 1), board, True)
+                    if col - 1 >= 0 and self.board[row][col - 1][:2] == "wp" and self.board[row+1][col-1] == "---":
+                        newMove = Move((row, col), (row + 1, col - 1), self.board, True)
                         validMoves = np.append(validMoves, newMove)
-                    if col + 1 <= 7 and board[row][col + 1][:2] == "wp":
-                        newMove = Move((row, col), (row + 1, col + 1), board, True)
+                    if col + 1 <= 7 and self.board[row][col + 1][:2] == "wp" and self.board[row+1][col+1] == "---":
+                        newMove = Move((row, col), (row + 1, col + 1), self.board, True)
                         validMoves = np.append(validMoves, newMove)
         return validMoves
 
-    def legalRookMoves(self, board, piece, validMoves, white=True):
+    def legalRookMoves(self, piece, white=True):
         """
         computing all legal moves for a rook piece in the board
-        :param board: board game state
         :param piece: position tuple
-        :param validMoves: an array of all valid moves
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
         """
+        validMoves = np.array([])
         row, col = piece[0], piece[1]  # saving position
         dirDict = {0: (1, 0), 1: (0, 1), 2: (-1, 0), 3: (0, -1)}  # dictionary of all possible directions for a rook
         # (1, 0) = up, (-1, 0) = down, (0, 1) = right, (0, -1) = left
@@ -209,79 +268,117 @@ class chessBoard:
             r, c = dirDict[i]  # picking dir
             ind = 1
             while 0 <= row + r*ind <= 7 and 0 <= col + c*ind <= 7:  # if position ahead is inside board
-                curPiece = board[row + r*ind][col + c*ind]  # picking piece in that position
+                curPiece = self.board[row + r*ind][col + c*ind]  # picking piece in that position
                 if curPiece == "---":  # if it is un captured
                     # create move and insert it
-                    newMove = Move((row, col), (row + r*ind, col + c*ind), board)
+                    newMove = Move((row, col), (row + r*ind, col + c*ind), self.board)
                     validMoves = np.append(validMoves, newMove)
                 else:  # is captured by some piece
                     # it is a white turn and the currPiece is white, or the same for black piece
-                    if (white and curPiece[0] == "w") or (not white and curPiece[0] == "b"):
-                        break
-                    # it is a white turn and the currPiece is black or the same for black piece
                     if (white and curPiece[0] == "b") or (not white and curPiece[0] == "w"):
-                        newMove = Move((row, col), (row + r * ind, col + c * ind), board)
+                        newMove = Move((row, col), (row + r * ind, col + c * ind), self.board)
                         validMoves = np.append(validMoves, newMove)
-                        break
+                    break
                 ind += 1
         return validMoves
 
-    def legalKnightMoves(self, board, piece, validMoves, white=True):
+    def legalKnightMoves(self, piece, white=True):
         """
         computing all legal moves for a knight piece in the board
-        :param board: board game state
         :param piece: position tuple
-        :param validMoves: an array of all valid moves
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
         """
+        validMoves = np.array([])
         row, col = piece[0], piece[1]  # saving position
         # all ahead steps for a knight
         knightMoves = {1: (1, 2), 2: (2, 1), 3: (1, -2), 4: (2, -1), 5: (-1, -2), 6: (-2, -1), 7: (-1, 2), 8: (-2, 1)}
         for i in range(1, 9):  # iterate for every step in dictionary
             r, c = knightMoves[i]  # saving steps
             if 0 <= row + r <= 7 and 0 <= col + c <= 7:  # if ahead position is inside board
-                curPiece = board[row + r][col + c]  # picking piece in that position
+                curPiece = self.board[row + r][col + c]  # picking piece in that position
                 # checking for a possible next position for a knight
                 if (white and curPiece[0] != "w") or (not white and curPiece[0] != "b"):
-                    newMove = Move((row, col), (row + r, col + c), board)
+                    newMove = Move((row, col), (row + r, col + c), self.board)
                     validMoves = np.append(validMoves, newMove)
         return validMoves
 
-
-
-    def legalBishopMoves(self, board, piece, validMoves, white=True):
+    def legalBishopMoves(self, piece, white=True):
         """
         computing all legal moves for a bishop piece in the board
-        :param board: board game state
         :param piece: position tuple
-        :param validMoves: an array of all valid moves
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
         """
-        pass
+        validMoves = np.array([])
+        row, col = piece[0], piece[1]
+        dirDict = {0: (1, 1), 1: (1, -1), 2: (-1, 1), 3: (-1, -1)}
+        for i in dirDict.keys():
+            r, c = dirDict[i]
+            ind = 1
+            while 0 <= row + r*ind <= 7 and 0 <= col +c*ind <= 7:
+                currPos = self.board[row + r*ind][col + c*ind]
+                if currPos == "---":
+                    newMove = Move((row, col), (row + r*ind, col + c*ind), self.board)
+                    validMoves = np.append(validMoves, newMove)
+                else:
+                    if (white and currPos[0] == "b") or (not white and currPos[0] == "w"):
+                        newMove = Move((row, col), (row + r * ind, col + c * ind), self.board)
+                        validMoves = np.append(validMoves, newMove)
+                    break
+                ind += 1
+        return validMoves
 
-    def legalQueenMoves(self, board, piece, validMoves, white=True):
+    def legalQueenMoves(self, piece, white=True):
         """
         computing all legal moves for a queen piece in the board
-        :param board: board game state
         :param piece: position tuple
-        :param validMoves: an array of all valid moves
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
         """
-        pass
+        validMoves = np.concatenate((self.legalBishopMoves(piece, white),
+                                    self.legalRookMoves(piece, white)))
+        return validMoves
 
-    def legalKingMoves(self, board, piece, validMoves, white=True):
+    def legalKingMoves(self, piece, white=True):
         """
         computing all legal moves for a rook piece in the board
-        :param board: board game state
         :param piece: position tuple
-        :param validMoves: an array of all valid moves
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
         """
-        pass
+        validMoves = np.array([])
+        row, col = piece[0], piece[1]
+        kingMoves = {0: (1, 0), 1: (1, 1), 2: (0, 1), 3: (-1, 1), 4: (-1, 0), 5: (-1, -1), 6: (0, -1), 7: (1, -1)}
+        for i in range(8):
+            r, c = kingMoves[i]
+            if 0 <= row + r <= 7 and 0 <= col + c <= 7:
+                currPos = self.board[row+r][col+c]
+                if (white and currPos[0] != "w") or (not white and currPos[0] != "b"):
+                    newMove = Move((row, col), (row + r, col + c), self.board)
+                    validMoves = np.append(validMoves, newMove)
+        # castling
+        dictBooleanColors = {True: "w", False: "b"}
+        for i in range(1, 3):
+            rook = dictBooleanColors[white] + "r" + str(i)
+            if self.isLegalCastle(rook, self.board[row][col], white):
+                if i == 1:
+                    newMove = Move((row, col), (row, col - 2), self.board, False, True)
+                else:
+                    newMove = Move((row, col), (row, col + 2), self.board, False, True)
+                validMoves = np.append(validMoves, newMove)
+        return validMoves
+
+    def isLegalCastle(self, rook, king, white=True):
+        if self.Castle[king] and self.Castle[rook]:
+            for i in range(min(3, (int(rook[2])//2)*7) + 1, max(3,  (int(rook[2])//2)*7)):
+                if self.board[int(white)*7][i] != "---":
+                    return False
+            return True
+
+    def checkMate(self):
+        if len(self.getValidMoves()) == 0:
+            return True
 
 
 class Move:
@@ -302,30 +399,46 @@ class Move:
         # where to
         self.rowEnd = endLoc[0]
         self.colEnd = endLoc[1]
-        if self.isEnPassant(board, startLoc, endLoc) or enPassant:
+        # if move is en Passant type
+        if self.isEnPassant(board) or enPassant:
             self.enPassant = True
         else:
             self.enPassant = False
+        # if move is a castle move type
+        if self.isCastling(board) or castling:
+            self.castling = True
+        else:
+            self.castling = False
         # pieces involved
         self.selectedPiece = board[self.rowStart][self.colStart]
         if self.enPassant:
             self.capturedPiece = board[self.rowStart][self.colEnd]
+        elif self.castling:
+            if self.colStart < self.colEnd:
+                self.capturedPiece = board[self.rowStart][7]
+            else:
+                self.capturedPiece = board[self.rowStart][0]
         else:
             self.capturedPiece = board[self.rowEnd][self.colEnd]
-        self.castling = castling
         self.moveID = 100000 * self.castling + 10000 * self.enPassant + 1000 * self.rowStart + 100 * self.colStart + 10 * self.rowEnd + 1 * self.colEnd
 
-    def isEnPassant(self, board, startLoc, endLoc):
-        if startLoc[0] == 3:
-            if board[startLoc[0]][startLoc[1]][:2] == "wp":
-                if board[endLoc[0]][endLoc[1]] == "---":
-                    if board[startLoc[0]][endLoc[1]][:2] == "bp":
+    def isEnPassant(self, board):
+        if self.rowStart == 3:
+            if board[self.rowStart][self.colStart][:2] == "wp":
+                if board[self.rowEnd][self.colEnd] == "---":
+                    if board[self.rowStart][self.colEnd][:2] == "bp":
                         return True
-        elif startLoc[0] == 4:
-            if board[startLoc[0]][startLoc[1]][:2] == "bp":
-                if board[endLoc[0]][endLoc[1]] == "---":
-                    if board[startLoc[0]][endLoc[1]][:2] == "wp":
+        elif self.rowStart == 4:
+            if board[self.rowStart][self.colStart][:2] == "bp":
+                if board[self.rowEnd][self.colEnd] == "---":
+                    if board[self.rowStart][self.colEnd][:2] == "wp":
                         return True
+        return False
+
+    def isCastling(self, board):
+        if board[self.rowStart][self.colStart][1] == "K":
+            if self.colStart == 3 and np.abs(self.colEnd-self.colStart) == 2:
+                return True
         return False
 
     def __eq__(self, other):
@@ -349,10 +462,6 @@ class Rules:
     this class response for checking if a move is valid,
     etc. the king is on check and so on
     """
-
-    def __init__(self, board):
-        self.board = board
-
     """
         checking whether the king is on threat
     """
@@ -368,24 +477,22 @@ class Rules:
         :return: boolean obj. True iff is on threat
         """
         # checking if there is a threat on the diagonals
-        posDiagonal = self.downRightDiagonal(board, piece, white) or self.downLeftDiagonal(board, piece, white) or self\
-            .upLeftDiagonal(board, piece, white) or self.upRightDiagonal(board, piece, white)
+        posDiagonals = self.diagonals(board, piece, white)
         # checking if there is a threat on the vertical
-        posVertical = self.verticalUp(board, piece, white) or self.verticalDown(board, piece, white)
-        # checking if there is a threat on the horizon
-        posHorizon = self.horizonLeft(board, piece, white) or self.horizonRight(board, piece, white)
+        posVertices = self.vertices(board, piece, white)
         # checking if there is a threat from a knight
         posKnightMoves = self.KnightMoves(board, piece, white)
-        return posHorizon or posVertical or posDiagonal or posKnightMoves
+        return posVertices or posDiagonals or posKnightMoves
 
     """
     all 9 next functions are checking if when given a certain piece and color, 
     that piece is threaten by the opposite player pieces from diagonal, vertical, horizon or a knight
     """
-    def KnightMoves(self, board, piece, white):
+    @staticmethod
+    def KnightMoves(board, piece, white):
         """
         functions will check if a piece is being threat from an opposite knight
-        :param board: board state, pieces and positions
+        :param board: board game status
         :param piece: piece to ce checked
         :param white: is a white piece or not
         :return: true iff piece is under threat from a knight
@@ -407,194 +514,50 @@ class Rules:
             return True
         return False
 
-    def downRightDiagonal(self, board, piece, white=True):
-        """
-            functions will check if a piece is being threat from right down diagonal
-            :param board: board state, pieces and positions
-            :param piece: piece to ce checked
-            :param white: is a white piece or not
-            :return: true iff piece is under threat from down right side
-        """
-        row, col = piece[0], piece[1]  # saving position
-        i = 1
-        while 0 <= row + i <= 7 and 0 <= col + i <= 7:  # if the position ahead is inside board
-            currPos = board[row + i][col + i]  # taking piece from that position ahead
-            if white:
-                # checking if that currPiece can take on piece
-                if currPos in {"bq", "bb1", "bb2"} or (i == 1 and currPos == "bK"):
+    @staticmethod
+    def vertices(board, piece, white=True):
+        row, col = piece[0], piece[1]
+        dirDict = {0: (1, 0), 1: (0, -1), 2: (-1, 0), 3: (0, 1)}
+        for i in range(4):
+            r, c = dirDict[i]
+            ind = 1
+            while 0 <= row + r*ind <= 7 and 0 <= col + c*ind <= 7:
+                currPos = board[row + r*ind][col + c*ind]
+                if currPos == "---":
+                    ind += 1
+                    continue
+                elif white and currPos[:2] in {"br", "bq", "bK"}:
                     return True
-                elif currPos != "---":
-                    break
-                # same only now for the opposite player
-            else:
-                if currPos in {"wq", "wb1", "wb2"} or (i == 1 and currPos[:2] in {"wp", "wK"}):
+                elif not white and currPos[:2] in {"wr", "wq", "wK"}:
                     return True
-                elif currPos != "---":
+                else:
                     break
-            i += 1
         return False
 
-    def downLeftDiagonal(self, board, piece, white=True):
-        """
-            functions will check if a piece is being threat from left down diagonal
-            :param board: board state, pieces and positions
-            :param piece: piece to ce checked
-            :param white: is a white piece or not
-            :return: true iff piece is under threat from down right side
-        """
-        row, col = piece[0], piece[1]  # saving position
-        i = 1
-        j = -1
-        while 0 <= row + i <= 7 and 0 <= col + j <= 7:  # if position ahead is inside board
-            currPos = board[row + i][col + j]  # picking piece in that position
-            if white:
-                # checking if that currPiece can take on piece
-                if currPos in {"bq", "bb1", "bb2"} or (i == 1 and j == -1 and currPos == "bK"):
+    @staticmethod
+    def diagonals(board, piece, white=True):
+        row, col = piece[0], piece[1]
+        dirDict = {0: (1, 1), 1: (-1, 1), 2: (-1, -1), 3: (1, -1)}
+        for i in range(4):
+            r, c = dirDict[i]
+            ind = 1
+            while 0 <= row + r*ind <= 7 and 0 <= col + c*ind <= 7:
+                currPos = board[row + r*ind][col + c*ind]
+                if currPos == "---":
+                    ind += 1
+                    continue
+                if white and currPos[:2] == "bp":
+                    if r < 0 and ind == 1:
+                        return True
+                    ind += 1
+                elif white and currPos[:2] in {"bb", "bq", "bK"}:
                     return True
-                elif currPos != "---":
-                    break
-            else:
-                # same only now for the opposite player
-                if currPos in {"wq", "wb1", "wb2"} or (i == 1 and j == -1 and currPos[:2] in {"wp", "wK"}):
+                elif not white and currPos[:2] == "wp":
+                    if r > 0 and ind == 1:
+                        return True
+                    ind += 1
+                elif not white and currPos in {"wb", "wq", "wK"}:
                     return True
-                elif currPos != "---":
+                else:
                     break
-            j -= 1
-            i += 1
-        return False
-
-    def upLeftDiagonal(self, board, piece, white=True):
-        """
-            functions will check if a piece is being threat from left up diagonal
-            :param board: board state, pieces and positions
-            :param piece: piece to ce checked
-            :param white: is a white piece or not
-            :return: true iff piece is under threat from down right side
-        """
-        row, col = piece[0], piece[1]  # saving position
-        i = -1
-        while 0 <= row + i <= 7 and 0 <= col + i <= 7:  # if position ahead is inside board
-            currPos = board[row + i][col + i]  # picking piece in that position
-            if white:
-                # checking if that currPiece can take on piece
-                if currPos in {"bq", "bb1", "bb2"} or (i == -1 and currPos[:2] in {"bp", "bK"}):
-                    return True
-                elif currPos != "---":
-                    break
-            else:
-                # same only now for the opposite player
-                if currPos in {"wq", "wb1", "wb2"} or (i == -1 and currPos[:2] == "wK"):
-                    return True
-                elif currPos != "---":
-                    break
-            i -= 1
-        return False
-
-    def upRightDiagonal(self, board, piece, white=True):
-        """
-            functions will check if a piece is being threat from right up diagonal
-            :param board: board state, pieces and positions
-            :param piece: piece to ce checked
-            :param white: is a white piece or not
-            :return: true iff piece is under threat from down right side
-        """
-        row, col = piece[0], piece[1]  # saving position
-        i = -1
-        j = 1
-        while 0 <= row + i <= 7 and 0 <= col + j <= 7:  # if position ahead is inside board
-            currPos = board[row + i][col + j]  # picking piece in that position
-            if white:
-                # checking if that currPiece can take on piece
-                if currPos in {"bq", "bb1", "bb2"} or (i == -1 and j == 1 and currPos[:2] in {"bp", "bK"}):
-                    return True
-                elif currPos != "---":
-                    break
-            else:
-                # same only now for the opposite player
-                if currPos in {"wq", "wb1", "wb2"} or (i == -1 and j == 1 and currPos[:2] == "wK"):
-                    return True
-                elif currPos != "---":
-                    break
-            j += 1
-            i -= 1
-        return False
-
-    def horizonRight(self, board, position, white=True):
-        row, col = position[0], position[1]
-        i = 1
-        while 0 <= col + i <= 7:
-            currPos = board[row][col + i]
-            if white:
-                if currPos in {"bq", "br1", "br2"} or (i == 1 and currPos[:2] == "bK"):
-                    return True
-                elif currPos != "---":
-                    break
-            else:
-                if currPos in {"wq", "wr1", "wr2"} or (i == 1 and currPos[:2] == "wK"):
-                    return True
-                elif currPos != "---":
-                    break
-            i += 1
-        return False
-
-    def horizonLeft(self, board, position, white=True):
-        row, col = position[0], position[1]
-        j = -1
-        while 0 <= col + j <= 7:
-            currPos = board[row][col + j]
-            if white:
-                if currPos in {"bq", "br1", "br2"} or (j == -1 and currPos[:2] == "bK"):
-                    return True
-                elif currPos != "---":
-                    break
-            else:
-                if currPos in {"wq", "wr1", "wr2"} or (j == -1 and currPos[:2] == "wK"):
-                    return True
-                elif currPos != "---":
-                    break
-            j -= 1
-        return False
-
-    def verticalDown(self, board, position, white=True, down=1):
-        row, col = position[0], position[1]
-        i = 1
-        while 0 <= row + down * i <= 7:
-            currPos = board[row + i][col]
-            if white:
-                if currPos in {"bq", "br1", "br2"} or (i == 1 and currPos[:2] == "bK"):
-                    return True
-                elif currPos != "---":
-                    break
-            else:
-                if currPos in {"wq", "wr1", "wr2"} or (i == 1 and currPos[:2] == "wK"):
-                    return True
-                elif currPos != "---":
-                    break
-            i += 1
-        return False
-
-    def verticalUp(self, board, position, white=True):
-        """
-        checking for a threat from vertical up direction
-        :param board: board status
-        :param position: possible position under threat
-        :param white: is position white or not
-        :return: true or false
-        """
-        row, col = position[0], position[1]  # saving position values
-        j = -1
-        while 0 <= row + j <= 7:  # running on every position
-            currPos = board[row + j][col]  # player in curr position
-            if white:
-                # our position is white, so need to check for a threat from black
-                if currPos in {"bq", "br1", "br2"} or (j == -1 and currPos[:2] == "bK"):
-                    return True
-                elif currPos != "---":
-                    break
-            else:
-                if currPos in {"wq", "wr1", "wr2"} or (j == -1 and currPos[:2] == "wK"):
-                    return True
-                elif currPos != "---":
-                    break
-            j -= 1
         return False

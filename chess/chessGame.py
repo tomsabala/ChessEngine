@@ -66,19 +66,27 @@ def main():
                     square_selected = tuple()
                     curr_move = []
                 else:
-                    square_selected = (row, col)  # saving mouse click sata
-                    curr_move.append(square_selected)
-                    if len(curr_move) == 1 and engine.board[row][col] == "---":
+                    if not engine.whiteTurn:
+                        move = np.random.choice(validMoves)
+                        print(move.getChessNotation())
+                        engine.makeMove(move)
+                        moveMade = True
                         square_selected = tuple()
                         curr_move = []
-                    elif len(curr_move) == 2:  # if it's the 2-nd move
-                        move = chs.Move(curr_move[0], curr_move[1], engine.board)
-                        if move in validMoves:
-                            print(move.getChessNotation())
-                            engine.makeMove(move)
-                            moveMade = True
-                        square_selected = tuple()
-                        curr_move = []
+                    else:
+                        square_selected = (row, col)  # saving mouse click sata
+                        curr_move.append(square_selected)
+                        if len(curr_move) == 1 and engine.board[row][col] == "---":
+                            square_selected = tuple()
+                            curr_move = []
+                        elif len(curr_move) == 2:  # if it's the 2-nd move
+                            move = chs.Move(curr_move[0], curr_move[1], engine.board)
+                            if move in validMoves:
+                                print(move.getChessNotation())
+                                engine.makeMove(move)
+                                moveMade = True
+                            square_selected = tuple()
+                            curr_move = []
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:
                     engine.undoMove()
@@ -88,6 +96,13 @@ def main():
             if moveMade:
                 moveMade = False
                 validMoves = engine.getValidMoves()
+                if len(validMoves) == 0:
+                    print("check mate\n")
+                    if engine.whiteTurn:
+                        print("white loses")
+                    else:
+                        print("black loses")
+                    running = False
         drawGameState(engine.board, screen)
         time.tick(MAX_FPS)
         p.display.flip()
