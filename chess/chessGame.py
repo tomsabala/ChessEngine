@@ -14,6 +14,7 @@ board_height = board_width = 400
 square_size = 400 // 8
 images = dict()
 MAX_FPS = 15
+setOpt = 1
 
 """
 Loading Images
@@ -31,9 +32,7 @@ def loadImages(images):
 """
 def main will deal user input and update screen
 """
-
-
-def main():
+def main(setOpt):
     """
     initialize 400x400 screen size and time
     """
@@ -61,12 +60,11 @@ def main():
                 col, row = p.mouse.get_pos()  # saving the mouse row and col
                 row = row // square_size  # resizing it to fit screen
                 col = col // square_size
-
                 if square_selected == (row, col):  # if clicked the same square
                     square_selected = tuple()
                     curr_move = []
                 else:
-                    if not engine.whiteTurn:
+                    if setOpt == 1:
                         move = np.random.choice(validMoves)
                         print(move.getChessNotation())
                         engine.makeMove(move)
@@ -96,20 +94,29 @@ def main():
             if moveMade:
                 moveMade = False
                 validMoves = engine.getValidMoves()
+                square_selected = tuple()
+                curr_move = []
                 if len(validMoves) == 0:
-                    print("check mate\n")
-                    if engine.whiteTurn:
-                        print("white loses")
-                    else:
-                        print("black loses")
-                    running = False
-        drawGameState(engine.board, screen)
+                    if engine.checkMate():
+                        running = False
+                        print("End Game")
+        drawGameState(engine.board, screen, square_selected, validMoves)
         time.tick(MAX_FPS)
         p.display.flip()
 
+def highloghtSquares(board, screen, piece, validMoves):
+    if piece != ():
+        for move in validMoves:
+            if move.selectedPiece == board[piece[0]][piece[1]]:
+                s = p.Surface((square_size, square_size))
+                s.set_alpha(100)
+                screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))
+                s.fill(p.Color("yellow1"))
+                screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))
 
-def drawGameState(board, screen):
+def drawGameState(board, screen, piece, validMoves):
     drawBoard(screen)
+    highloghtSquares(board, screen, piece, validMoves)
     drawPieces(board, screen)
 
 
@@ -129,5 +136,82 @@ def drawPieces(board, screen):
                 screen.blit(images[piece], p.Rect(j * square_size, i * square_size, square_size, square_size))
 
 
+def settings():
+    screen = p.display.set_mode((500, 500))
+    p.display.set_caption('Chess Game')
+
+    # Fill background
+    background = p.Surface(screen.get_size())
+    background = background.convert()
+    background.fill(p.Color("lightsteelblue"))
+
+    # Display some text
+    font = p.font.Font(None, 36)
+    textHead = font.render("Game Settings:", True, p.Color("cornflowerblue"))
+    textpos = textHead.get_rect()
+    textpos.centerx = background.get_rect().centerx
+
+    text002 = font.render("Choose Difficulty: ", True, p.Color("cornflowerblue"))
+    text002pos = text002.get_rect()
+    text002pos.x = 20
+    text002pos.y = 80
+
+    text003 = font.render("Good Luck!", True, p.Color("cornflowerblue"))
+    text003pos = text003.get_rect()
+    text003pos.midbottom = background.get_rect().midbottom
+
+    fontopt = p.font.Font(None, 26)
+    opt1 = fontopt.render("Click -1- for a random component (default)", True, p.Color("cornflowerblue"))
+    opt1pos = opt1.get_rect()
+    opt1pos.x = 50
+    opt1pos.y = 130
+
+    opt2 = fontopt.render("Click -2- for a level 1 component", True, p.Color("cornflowerblue"))
+    opt2pos = opt2.get_rect()
+    opt2pos.x = 50
+    opt2pos.y = 160
+
+    opt3 = fontopt.render("Click -3- for a level 2 component", True, p.Color("cornflowerblue"))
+    opt3pos = opt3.get_rect()
+    opt3pos.x = 50
+    opt3pos.y = 190
+
+    opt4 = fontopt.render("Click -4- for a level 3 component", True, p.Color("cornflowerblue"))
+    opt4pos = opt4.get_rect()
+    opt4pos.x = 50
+    opt4pos.y = 220
+
+    background.blit(text003, text003pos)
+    background.blit(text002, text002pos)
+    background.blit(textHead, textpos)
+    background.blit(opt1, opt1pos)
+    background.blit(opt2, opt2pos)
+    background.blit(opt3, opt3pos)
+    background.blit(opt4, opt4pos)
+
+    # Blit everything to the screen
+    screen.blit(background, (0, 0))
+    p.display.flip()
+
+    # Event loop
+    while True:
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                return
+            if event.type == p.KEYDOWN:
+                if event.key == p.K_1:
+                    main(1)
+                if event.key == p.K_2:
+                    main(2)
+                if event.key == p.K_3:
+                    main(3)
+                if event.key == p.K_4:
+                    main(4)
+
+        screen.blit(background, (0, 0))
+        p.display.flip()
+    return
+
+
 if __name__ == "__main__":
-    main()
+    settings()

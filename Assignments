@@ -1,0 +1,38 @@
+### update ###
+date : 15.12
+status:
+    1) compute simple moves-
+    pawn, rook, bishop and so on
+
+up to do:
+    1) add special moves:
+    en-passant, promotion, castling.
+    2) add a more structured setting to the game were we can choose a random player machine, or a smart player machine.
+    3) focus the program on situation were player is under check-mate.
+    4) adding animation to the pieces on board.
+    5) add status game bar: 1) bank of pieces for each color. 2) turn pointer
+    6) change picking piece animation to move with the mouse pointer on board.
+    7) add feasibility to see all possible for a certain picked piece on board.
+
+tasks info.
+    1) en-passant: use last moves on the log-moves to see if at current we can make an en-passant move,
+                    this is for addition to the conditions needed to be checked on the position of board pawns.
+       promotion: first list all condition needed to be checked for promoting a pawn,
+                    second we want to find a way of which we can re-present a promoted pawn on table
+                    third extract this to a code form solution.
+       castling: need to find a way saving castling status of the kings and rooks after each make-move and undo-move,
+                    who takes place in each turn.
+    2) game setting: build a more suitable user interface pre-game.
+    3) after each play check for a check mate under next player.
+    4 + 5 + 6 + 7) pygame documentation.
+
+
+check-List:
+    1) special moves:
+    en-passant - V, promotion - V, castling - V
+    2) setting game - V, need to see more elegant UI
+    3) check-mate - V
+    4) animation - ???
+    5) piece bank - ???, turn pointer - ???
+    6) picking piece animation - ???
+    7) valid moves animation - V
