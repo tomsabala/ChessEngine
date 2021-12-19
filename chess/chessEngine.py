@@ -577,26 +577,41 @@ class Rules:
 
     @staticmethod
     def vertices(board, piece, white=True):
-        row, col = piece[0], piece[1]
-        dirDict = {0: (1, 0), 1: (0, -1), 2: (-1, 0), 3: (0, 1)}
-        for i in range(4):
+        """
+        functions will check if a piece is being threat from an opposite queen, rook or a King if can
+        :param board: board game status
+        :param piece: piece to ce checked
+        :param white: is a white piece or not
+        :return: true iff piece is under threat from a queen, rook or a King if can
+        """
+        row, col = piece[0], piece[1]  # saving row and col
+        dirDict = {0: (1, 0), 1: (0, -1), 2: (-1, 0), 3: (0, 1)}  # directions dictionary
+        for i in range(4):  # for every direction
             r, c = dirDict[i]
-            ind = 1
-            while 0 <= row + r * ind <= 7 and 0 <= col + c * ind <= 7:
-                currPos = board[row + r * ind][col + c * ind]
-                if currPos == "---":
+            ind = 1  # distance from row and col
+            while 0 <= row + r * ind <= 7 and 0 <= col + c * ind <= 7:  # as long position ahead is in board limits
+                currPos = board[row + r * ind][col + c * ind]  # curr piece in that position
+                if currPos == "---":  # if no piece in that position
                     ind += 1
                     continue
+                # if piece can threaten on row,col position
                 elif white and currPos[:2] in {"br", "bq", "bK"}:
                     return True
                 elif not white and currPos[:2] in {"wr", "wq", "wK"}:
                     return True
-                else:
+                else:  # piece is not blanked and can't make a threat
                     break
         return False
 
     @staticmethod
     def diagonals(board, piece, white=True):
+        """
+        functions will check if a piece is being threat from an opposite queen, bishop or a King/pawn if can
+        :param board: board game status
+        :param piece: piece to ce checked
+        :param white: is a white piece or not
+        :return: true iff piece is under threat from a queen, bishop or a King/pawn if can
+        """
         row, col = piece[0], piece[1]
         dirDict = {0: (1, 1), 1: (-1, 1), 2: (-1, -1), 3: (1, -1)}
         for i in range(4):
