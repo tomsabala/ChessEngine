@@ -6,6 +6,35 @@ minimax
 and alpha beta pruning
 """
 import numpy as np
+from enum import Enum
+
+
+class EndGame:
+    """
+    class responsible for determining the end game result
+    it is nly been used if a certain player has no further moves.
+    and return's Enum values only.
+    """
+    def __init__(self, engine):
+        self.engine = engine
+
+    class end(Enum):
+        WHITE = "End game, White loose"
+        BLACK = "End game, Black loose"
+        DRAW = "End game, It's a draw"
+
+    def endGame(self):
+        """
+        functions will be called only when player has no moves available
+        and will check if king is on threat
+        :return: boolean value true iff check-mate
+        """
+        rul = Rules()
+        if self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.whitePieces["wK"], self.engine.whiteTurn):
+            return self.end.WHITE
+        elif not self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.blackPieces["bK"], False):
+            return self.end.BLACK
+        return self.end.DRAW
 
 
 class chessBoard:
@@ -31,26 +60,14 @@ class chessBoard:
         self.whitePieces = {"wr1": (7, 0), "wk1": (7, 1), "wb1": (7, 2), "wK": (7, 3), "wq": (7, 4), "wb2": (7, 5),
                             "wk2": (7, 6), "wr2": (7, 7), "wp1": (6, 0), "wp2": (6, 1), "wp3": (6, 2), "wp4": (6, 3),
                             "wp5": (6, 4), "wp6": (6, 5), "wp7": (6, 6), "wp8": (6, 7)}
-        ########################################
+        # castle status dictionary-log
         self.Castle = {"bK": True, "br1": True, "br2": True, "wK": True, "wr1": True, "wr2": True}
         self.dictCastleLog = {}
-        ########################################
-
+        # game turn-log
         self.whiteTurn = True  # a boolean obj. for whose turn is it
         self.moveLog = np.array([])  # an array of all moves
 
-    def checkMate(self):
-        """
-        functions will be called only when player has no moves available
-        and will check if king is on threat
-        :return: boolean value true iff check-mate
-        """
-        rul = Rules()
-        if rul.isCheck(self.board, self.whitePieces["wK"], self.whiteTurn):
-            return True
-        return False
-
-    def makeMove(self, move):
+    def makeMove(self, move, check=False):
         """
         initial move as a play on the board
         """
@@ -73,11 +90,10 @@ class chessBoard:
                 self.board[move.rowStart][7] = "---"
                 # update rook piece in dictionary
                 dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd - 1
-            self.dictCastleLog[move.moveID] = self.Castle.copy()
-            self.Castle[move.capturedPiece] = False
-            self.Castle[move.selectedPiece] = False
-
-
+            if not check:
+                self.dictCastleLog[move.moveID] = self.Castle.copy()
+                self.Castle[move.capturedPiece] = False
+                self.Castle[move.selectedPiece] = False
         elif move.enPassant:  # for enPassant type move
             # updating board state
             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
@@ -105,20 +121,22 @@ class chessBoard:
             dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
             if move.capturedPiece in dictTurnUpdates[not self.whiteTurn].keys():
                 del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]
-            if move.selectedPiece in self.Castle:
+            if not check and move.capturedPiece in self.Castle:
+                if self.Castle[move.capturedPiece]:
+                    self.dictCastleLog[move.moveID] = self.Castle.copy()
+                    self.Castle[move.capturedPiece] = False
+            if not check and move.selectedPiece in self.Castle:
                 if self.Castle[move.selectedPiece]:
                     self.dictCastleLog[move.moveID] = self.Castle.copy()
                     self.Castle[move.selectedPiece] = False
-
         self.moveLog = np.append(self.moveLog, move)  # appending the move to memory
         self.whiteTurn = not self.whiteTurn  # switching turns
 
-    def undoMove(self):
+    def undoMove(self, check=False):
         """
         resetting board to last move
         """
         if len(self.moveLog) > 0:  # there is a move to undo
-            dictInttoPiece = {1: "bK", 2: "br1", 3: "br2", 4: "wK", 5: "wr1", 6: "wr2"}
             dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
             move = self.moveLog[-1]  # last move in the array
             if move.castling:  # castling type move
@@ -139,8 +157,9 @@ class chessBoard:
                     self.board[move.rowEnd][move.colEnd - 1] = "---"
                     # update rook piece in dictionary
                     dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 7
-                self.Castle = self.dictCastleLog[move.moveID]
-                del self.dictCastleLog[move.moveID]
+                if not check:
+                    self.Castle = self.dictCastleLog[move.moveID]
+                    del self.dictCastleLog[move.moveID]
 
             elif move.enPassant:  # for a enPassant type move
                 # updating board state
@@ -151,7 +170,7 @@ class chessBoard:
                 dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
                 dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colStart
 
-            elif move.promotion: # for a promotion type move
+            elif move.promotion:  # for a promotion type move
                 # delete promoted piece from dictionary
                 del dictTurnUpdates[not self.whiteTurn][move.selectedPiece]
                 # update board
@@ -169,7 +188,7 @@ class chessBoard:
                 dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
                 if move.capturedPiece != "---":
                     dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd
-                if move.moveID in self.dictCastleLog:
+                if not check and move.moveID in self.dictCastleLog:
                     self.Castle = self.dictCastleLog[move.moveID]
                     del self.dictCastleLog[move.moveID]
 
@@ -196,10 +215,10 @@ class chessBoard:
                     validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos)))
             # validation check
             for move in validMoves:
-                self.makeMove(move)  # apply move
+                self.makeMove(move, True)  # apply move
                 if rul.isCheck(self.board, self.whitePieces["wK"], True):  # check for validation
                     validMoves = np.delete(validMoves, np.where(validMoves == move))  # is not valid, delete
-                self.undoMove()  # undo move
+                self.undoMove(True)  # undo move
         else:  # same as the above, this time for a black piece move
             for piece, pos in self.blackPieces.items():
                 if piece[:2] == "bp":
@@ -207,10 +226,10 @@ class chessBoard:
                 else:
                     validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False)))
             for move in validMoves:
-                self.makeMove(move)
+                self.makeMove(move, True)
                 if rul.isCheck(self.board, self.blackPieces["bK"], False):
                     validMoves = np.delete(validMoves, np.where(validMoves == move))
-                self.undoMove()
+                self.undoMove(True)
         return validMoves
 
     def legalPawnMoves(self, piece, white=True, moveLog=None):
@@ -277,10 +296,9 @@ class chessBoard:
                         validMoves = np.append(validMoves, np.array([newMove]))
         return validMoves
 
-    def legalRookMoves(self, piece, white=True, lastMove=None):
+    def legalRookMoves(self, piece, white=True):
         """
         computing all legal moves for a rook piece in the board
-        :param lastMove: un-necessary
         :param piece: position tuple
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
@@ -307,10 +325,9 @@ class chessBoard:
                 ind += 1
         return validMoves
 
-    def legalKnightMoves(self, piece, white=True, lastMove=None):
+    def legalKnightMoves(self, piece, white=True):
         """
         computing all legal moves for a knight piece in the board
-        :param lastMove: un-necessary
         :param piece: position tuple
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
@@ -329,10 +346,9 @@ class chessBoard:
                     validMoves = np.append(validMoves, np.array([newMove]))
         return validMoves
 
-    def legalBishopMoves(self, piece, white=True, lastMove=None):
+    def legalBishopMoves(self, piece, white=True):
         """
         computing all legal moves for a bishop piece in the board
-        :param lastMove: un-necessary
         :param piece: position tuple
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
@@ -356,10 +372,9 @@ class chessBoard:
                 ind += 1
         return validMoves
 
-    def legalQueenMoves(self, piece, white=True, lastMove=None):
+    def legalQueenMoves(self, piece, white=True):
         """
         computing all legal moves for a queen piece in the board
-        :param lastMove: un-necessary
         :param piece: position tuple
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
@@ -368,10 +383,9 @@ class chessBoard:
                                      self.legalRookMoves(piece, white)))
         return validMoves
 
-    def legalKingMoves(self, piece, white=True, lastMove=None):
+    def legalKingMoves(self, piece, white=True):
         """
         computing all legal moves for a rook piece in the board
-        :param lastMove: un-necessary
         :param piece: position tuple
         :param white: boolean type, true iff it is a white move turn
         :return: validMoves after insertions
@@ -393,7 +407,6 @@ class chessBoard:
                 rook = dictBooleanColors[white] + "r" + str(i)
                 if self.Castle[rook]:
                     if self.isLegalCastle(rook, white):
-                        print("rook")
                         if i == 1:
                             newMove = Move((row, col), (row, col - 2), self.board, False, True)
                         else:
@@ -403,16 +416,13 @@ class chessBoard:
 
     def isLegalCastle(self, rook, white=True):
         rul = Rules()
-        if (white and not rul.isCheck(self.board, self.whitePieces["wK"], white)) or (not white and not \
-                rul.isCheck(self.board, self.blackPieces["bK"], white)):
-            for i in range(min(3, (int(rook[2]) // 2) * 7) + 1, max(3, (int(rook[2]) // 2) * 7)):
-                if self.board[int(white) * 7][i] != "---":
-                    return False
+        if (white and rul.isCheck(self.board, self.whitePieces["wK"], True)) or \
+                (not white and rul.isCheck(self.board, self.blackPieces["bK"], False)):
+            return False
+        for i in range(min(3, (int(rook[2]) // 2) * 7) + 1, max(3, (int(rook[2]) // 2) * 7)):
+            if self.board[int(white) * 7][i] != "---":
+                return False
         return True
-
-    def checkMate(self):
-        if len(self.getValidMoves()) == 0:
-            return True
 
 
 class Move:
@@ -444,7 +454,7 @@ class Move:
         else:
             self.castling = False
         # if move is a promotion move type
-        if self.isPromotion(self.rowEnd,self.colStart, self.colEnd, board[self.rowStart][self.colStart]):
+        if self.isPromotion(self.rowEnd, self.colStart, self.colEnd, board[self.rowStart][self.colStart]):
             self.promotion = True
         else:
             self.promotion = False
@@ -461,8 +471,8 @@ class Move:
             pass
         else:
             self.capturedPiece = board[self.rowEnd][self.colEnd]
-        self.moveID = 1000000 * self.promotion + 100000 * self.castling + 10000 * self.enPassant + 1000 * self.rowStart \
-                      + 100 * self.colStart + 10 * self.rowEnd + 1 * self.colEnd
+        self.moveID = 1000000 * self.promotion + 100000 * self.castling + 10000 * self.enPassant + \
+                      1000 * self.rowStart + 100 * self.colStart + 10 * self.rowEnd + 1 * self.colEnd
 
     def isEnPassant(self, board):
         if self.rowStart == 3:
@@ -483,7 +493,8 @@ class Move:
                 return True
         return False
 
-    def isPromotion(self, rowEnd, colStart, colEnd, piece):
+    @staticmethod
+    def isPromotion(rowEnd, colStart, colEnd, piece):
         if piece[:2] == "wp" and rowEnd == 0 and colStart == colEnd:
             return True
         elif piece[:2] == "bp" and rowEnd == 7 and colStart == colEnd:
