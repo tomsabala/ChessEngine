@@ -71,130 +71,179 @@ class chessBoard:
         """
         initial move as a play on the board
         """
-        dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
-        if move.castling:  # for a castling type move
-            # update king side board
+        # updating board
+        self.updateBoard(move)
+        # updating piece and castle dictionary
+        if not check:
+            self.updatePieces(move, self.whiteTurn)
+        self.moveLog = np.append(self.moveLog, move)  # appending the move to memory
+        self.whiteTurn = not self.whiteTurn  # switching turns
+
+    def updateBoard(self, move):
+        """
+        updating board according to move annotation, after a move is done
+        :param move: Move type object
+        :return: None
+        """
+        if move.castling:  # for a castling move
+            # updating king position on board
             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
             self.board[move.rowStart][move.colStart] = "---"
-            # update king piece in dictionary
-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
-            if move.colEnd < move.colStart:
-                # update rook side board
+            # updating rook position on board
+            if move.colEnd < move.colStart:  # for a left side castling
                 self.board[move.rowEnd][move.colEnd + 1] = move.capturedPiece
                 self.board[move.rowStart][0] = "---"
-                # update rook piece in dictionary
-                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd + 1
-            else:
-                # update rook side board
+            else:  # for a right side castling
                 self.board[move.rowEnd][move.colEnd - 1] = move.capturedPiece
                 self.board[move.rowStart][7] = "---"
-                # update rook piece in dictionary
-                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd - 1
-            if not check:
-                self.dictCastleLog[move.moveID] = self.Castle.copy()
-                self.Castle[move.capturedPiece] = False
-                self.Castle[move.selectedPiece] = False
-        elif move.enPassant:  # for enPassant type move
-            # updating board state
+
+        elif move.enPassant:  # for an en-passant move
+            # updating selected and captured positions on board
             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
             self.board[move.rowStart][move.colStart] = "---"
             self.board[move.rowStart][move.colEnd] = "---"
-            # updating white and black pieces dictionary
-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
-            del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]
-
-        elif move.promotion:  # for promotion type move
-            # delete selected piece from dictionary
-            del dictTurnUpdates[self.whiteTurn][move.selectedPiece]
-            # update board
+        elif move.promotion:  # for a promotion move
+            # updating piece presenting + updating board position
             move.selectedPiece = move.selectedPiece[0] + "qp" + move.selectedPiece[-1]
             self.board[move.rowStart][move.colStart] = "---"
             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
-            # update dictionary
-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
-
-        else:  # for a regular type move
-            # update board
+        else:  # for a regular move
+            # updating selected piece position
             self.board[move.rowStart][move.colStart] = "---"
             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
-            # update piece dictionary
-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
-            if move.capturedPiece in dictTurnUpdates[not self.whiteTurn].keys():
-                del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]
-            if not check and move.capturedPiece in self.Castle:
-                if self.Castle[move.capturedPiece]:
-                    self.dictCastleLog[move.moveID] = self.Castle.copy()
-                    self.Castle[move.capturedPiece] = False
-            if not check and move.selectedPiece in self.Castle:
-                if self.Castle[move.selectedPiece]:
-                    self.dictCastleLog[move.moveID] = self.Castle.copy()
-                    self.Castle[move.selectedPiece] = False
-        self.moveLog = np.append(self.moveLog, move)  # appending the move to memory
-        self.whiteTurn = not self.whiteTurn  # switching turns
+
+    def updatePieces(self, move, white):
+        """
+        updating pieces dictionaries according to move annotation, after a move is made
+        :param move: Move type object
+        :param white: boolean type, True iff move is a white piece move
+        :return: None
+        """
+        # boolean to piece color dictionary
+        dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
+        if move.castling:  # for a castling move
+            # updating king piece
+            dictTurnUpdates[white][move.selectedPiece] = move.rowEnd, move.colEnd
+            # updating rook piece
+            if move.colEnd < move.colStart:  # left side castling
+                dictTurnUpdates[white][move.capturedPiece] = move.rowEnd, move.colEnd + 1
+            else:  # right side castling
+                dictTurnUpdates[white][move.capturedPiece] = move.rowEnd, move.colEnd - 1
+            # updating castling state dictionary
+            self.dictCastleLog[move.moveID] = self.Castle.copy()
+            self.Castle[move.capturedPiece] = False
+            self.Castle[move.selectedPiece] = False
+        elif move.enPassant:  # for an an-passant move
+            # updating selected piece
+            dictTurnUpdates[white][move.selectedPiece] = move.rowEnd, move.colEnd
+            # deleting captured piece
+            del dictTurnUpdates[not white][move.capturedPiece]
+        elif move.promotion:  # for a promotion move
+            # deleting old presenting of selected piece
+            del dictTurnUpdates[white][move.selectedPiece[0] + "p" + move.selectedPiece[-1]]
+            # adding new presenting
+            dictTurnUpdates[white][move.selectedPiece] = move.rowEnd, move.colEnd
+        else:  # for a regular move
+            # updating selected piece
+            dictTurnUpdates[white][move.selectedPiece] = move.rowEnd, move.colEnd
+            # updating captured piece of needed
+            if move.capturedPiece in dictTurnUpdates[not white].keys():
+                del dictTurnUpdates[not white][move.capturedPiece]
+            # update captured piece castle state if needed
+            if move.capturedPiece in self.Castle and self.Castle[move.capturedPiece]:
+                self.dictCastleLog[move.moveID] = self.Castle.copy()
+                self.Castle[move.capturedPiece] = False
+            # update selected piece castle state if needed
+            if move.selectedPiece in self.Castle and self.Castle[move.selectedPiece]:
+                self.dictCastleLog[move.moveID] = self.Castle.copy()
+                self.Castle[move.selectedPiece] = False
 
     def undoMove(self, check=False):
         """
         resetting board to last move
         """
         if len(self.moveLog) > 0:  # there is a move to undo
-            dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
             move = self.moveLog[-1]  # last move in the array
-            if move.castling:  # castling type move
-                # update king side board
-                self.board[move.rowStart][move.colStart] = move.selectedPiece
-                self.board[move.rowEnd][move.colEnd] = "---"
-                # update kine piece in dictionary
-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
-                if move.colEnd < move.colStart:
-                    # update rook side board
-                    self.board[move.rowStart][0] = move.capturedPiece
-                    self.board[move.rowEnd][move.colEnd + 1] = "---"
-                    # update rook piece in dictionary
-                    dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 0
-                else:
-                    # update rook side board
-                    self.board[move.rowStart][7] = move.capturedPiece
-                    self.board[move.rowEnd][move.colEnd - 1] = "---"
-                    # update rook piece in dictionary
-                    dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 7
-                if not check:
-                    self.Castle = self.dictCastleLog[move.moveID]
-                    del self.dictCastleLog[move.moveID]
-
-            elif move.enPassant:  # for a enPassant type move
-                # updating board state
-                self.board[move.rowEnd][move.colEnd] = "---"
-                self.board[move.rowStart][move.colEnd] = move.capturedPiece
-                self.board[move.rowStart][move.colStart] = move.selectedPiece
-                # updating white and black pieces
-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
-                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colStart
-
-            elif move.promotion:  # for a promotion type move
-                # delete promoted piece from dictionary
-                del dictTurnUpdates[not self.whiteTurn][move.selectedPiece]
-                # update board
-                move.selectedPiece = move.selectedPiece[0] + "p" + move.selectedPiece[-1]
-                self.board[move.rowStart][move.colStart] = move.selectedPiece
-                self.board[move.rowEnd][move.colEnd] = "---"
-                # update dictionary
-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
-
-            else:  # for a regular type move
-                # updating board
-                self.board[move.rowEnd][move.colEnd] = move.capturedPiece
-                self.board[move.rowStart][move.colStart] = move.selectedPiece
-                # updating piece in dictionary
-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
-                if move.capturedPiece != "---":
-                    dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd
-                if not check and move.moveID in self.dictCastleLog:
-                    self.Castle = self.dictCastleLog[move.moveID]
-                    del self.dictCastleLog[move.moveID]
-
+            # restoring board
+            self.restoreBoard(move)
+            # restoring pieces of needed
+            if not check:
+                self.restorePieces(move, self.whiteTurn)
             # updating settings
             self.whiteTurn = not self.whiteTurn
             self.moveLog = np.delete(self.moveLog, len(self.moveLog) - 1)
+
+    def restoreBoard(self, move):
+        """
+        restoring board state according to move annotation, after a move is undo
+        :param move: a Move type object
+        :return: None
+        """
+        if move.castling:  # for a castling move
+            # updating king position on board
+            self.board[move.rowStart][move.colStart] = move.selectedPiece
+            self.board[move.rowEnd][move.colEnd] = "---"
+            # updating rook position on board
+            if move.colEnd < move.colStart:  # left side castling
+                self.board[move.rowStart][0] = move.capturedPiece
+                self.board[move.rowEnd][move.colEnd + 1] = "---"
+            else:  # eight side castling
+                self.board[move.rowStart][7] = move.capturedPiece
+                self.board[move.rowEnd][move.colEnd - 1] = "---"
+        elif move.enPassant:  # for an en-passant move
+            # updating selected and captured positions on board
+            self.board[move.rowEnd][move.colEnd] = "---"
+            self.board[move.rowStart][move.colEnd] = move.capturedPiece
+            self.board[move.rowStart][move.colStart] = move.selectedPiece
+        elif move.promotion:  # for a promotion move
+            # updating piece on board
+            move.selectedPiece = move.selectedPiece[0] + "p" + move.selectedPiece[-1]
+            self.board[move.rowStart][move.colStart] = move.selectedPiece
+            self.board[move.rowEnd][move.colEnd] = "---"
+        else:  # for a regular move
+            # updating board
+            self.board[move.rowEnd][move.colEnd] = move.capturedPiece
+            self.board[move.rowStart][move.colStart] = move.selectedPiece
+
+    def restorePieces(self, move, white):
+        """
+        restoring pieces dictionaries according to move annotation, after a move is undo
+        :param move: Move type object
+        :param white: boolean type obj. True iff it's a white piece move
+        :return: None
+        """
+        # boolean to color dictionary
+        dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
+        if move.castling:  # for a castling move
+            # updating king in dictionary
+            dictTurnUpdates[not white][move.selectedPiece] = move.rowStart, move.colStart
+            # updating rook in dictionary
+            if move.colEnd < move.colStart:  # left side castling
+                dictTurnUpdates[not white][move.capturedPiece] = move.rowStart, 0
+            else:  # right side castling
+                dictTurnUpdates[not white][move.capturedPiece] = move.rowStart, 7
+            # updating castle state
+            self.Castle = self.dictCastleLog[move.moveID]
+            del self.dictCastleLog[move.moveID]
+        elif move.enPassant:  # for an en-passant move
+            # updating selected piece and captured piece
+            dictTurnUpdates[not white][move.selectedPiece] = move.rowStart, move.colStart
+            dictTurnUpdates[white][move.capturedPiece] = move.rowEnd, move.colStart
+        elif move.promotion:  # for a promotion move
+            # deleting old presenting of selected piece
+            del dictTurnUpdates[not white][move.selectedPiece[0] + "pq" + move.selectedPiece[-1]]
+            # updating new presenting of selected piece
+            dictTurnUpdates[not white][move.selectedPiece] = move.rowStart, move.colStart
+        else:  # for a regular move
+            # updating selected piece
+            dictTurnUpdates[not white][move.selectedPiece] = move.rowStart, move.colStart
+            # updating captured piece if needed
+            if move.capturedPiece != "---":
+                dictTurnUpdates[white][move.capturedPiece] = move.rowEnd, move.colEnd
+            # updating castling state if needed
+            if move.moveID in self.dictCastleLog:
+                self.Castle = self.dictCastleLog[move.moveID]
+                del self.dictCastleLog[move.moveID]
 
     def getValidMoves(self):
         """
