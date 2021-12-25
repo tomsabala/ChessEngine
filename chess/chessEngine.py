@@ -257,26 +257,35 @@ class chessBoard:
         validMoves = np.array([])  # an empty array
         rul = Rules()  # an object for re-checking if a move is valid etc. king is on check
         if self.whiteTurn:  # computing all white pieces moves
-            for piece, pos in self.whitePieces.items():  # for every piece from whites
-                if piece[:2] == "wp":  # if piece is a pawn we want to send the move-log as another input
-                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos, True, self.moveLog)))
-                else:
-                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos)))
+            for r in range(8):
+                for c in range(8):
+                    piece = self.board[r][c]
+                    pos = (r, c)
+                    if piece[0] == "w":
+                        if piece[:2] == "wp":
+                            validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos, True, self.moveLog)))
+                        else:
+                            validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos, True)))
             # validation check
             for move in validMoves:
                 self.makeMove(move, True)  # apply move
-                if rul.isCheck(self.board, self.whitePieces["wK"], True):  # check for validation
+                if rul.isCheck(self.board, True):  # check for validation
                     validMoves = np.delete(validMoves, np.where(validMoves == move))  # is not valid, delete
                 self.undoMove(True)  # undo move
         else:  # same as the above, this time for a black piece move
-            for piece, pos in self.blackPieces.items():
-                if piece[:2] == "bp":
-                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False, self.moveLog)))
-                else:
-                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False)))
+            for r in range(8):
+                for c in range(8):
+                    piece = self.board[r][c]
+                    pos = (r, c)
+                    if piece[0] == "b":
+                        if piece[:2] == "bp":
+                            validMoves = np.concatenate(
+                                (validMoves, blackPiecesToFunc[piece[:2]](pos, False, self.moveLog)))
+                        else:
+                            validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False)))
             for move in validMoves:
                 self.makeMove(move, True)
-                if rul.isCheck(self.board, self.blackPieces["bK"], False):
+                if rul.isCheck(self.board, False):
                     validMoves = np.delete(validMoves, np.where(validMoves == move))
                 self.undoMove(True)
         return validMoves
@@ -465,8 +474,8 @@ class chessBoard:
 
     def isLegalCastle(self, rook, white=True):
         rul = Rules()
-        if (white and rul.isCheck(self.board, self.whitePieces["wK"], True)) or \
-                (not white and rul.isCheck(self.board, self.blackPieces["bK"], False)):
+        if (white and rul.isCheck(self.board, True)) or \
+                (not white and rul.isCheck(self.board, False)):
             return False
         for i in range(min(3, (int(rook[2]) // 2) * 7) + 1, max(3, (int(rook[2]) // 2) * 7)):
             if self.board[int(white) * 7][i] != "---":
@@ -575,7 +584,14 @@ class Rules:
         checking whether the king is on threat
     """
 
-    def isCheck(self, board, kingPos, white=True):
+    def isCheck(self, board, white=True):
+        kingPos = ()
+        for r in range(8):
+            for c in range(8):
+                if board[r][c] == "wK" and white:
+                    kingPos = (r, c)
+                elif board[r][c] == "bK" and not white:
+                    kingPos = (r, c)
         return self.isInThreat(board, kingPos, white)
 
     def isInThreat(self, board, piece, white=True):
@@ -643,12 +659,17 @@ class Rules:
                 if currPos == "---":  # if no piece in that position
                     ind += 1
                     continue
-                # if piece can threaten on row,col position
-                elif white and currPos[:2] in {"br", "bq", "bK"}:
-                    return True
-                elif not white and currPos[:2] in {"wr", "wq", "wK"}:
-                    return True
-                else:  # piece is not blanked and can't make a threat
+                elif white:
+                    if currPos[:2] == "bK" and ind == 1:
+                        return True
+                    elif currPos[:2] in {"br", "bq"}:
+                        return True
+                    break
+                else:
+                    if currPos[:2] == "wK" and ind == 1:
+                        return True
+                    elif currPos[:2] in {"wr", "wq"}:
+                        return True
                     break
         return False
 
@@ -671,18 +692,20 @@ class Rules:
                 if currPos == "---":
                     ind += 1
                     continue
-                if white and currPos[:2] == "bp":
-                    if r < 0 and ind == 1:
+                elif white:
+                    if currPos[:2] == "bp" and ind == 1 and r < 0:
                         return True
-                    ind += 1
-                elif white and currPos[:2] in {"bb", "bq", "bK"}:
-                    return True
-                elif not white and currPos[:2] == "wp":
-                    if r > 0 and ind == 1:
+                    elif currPos[:2] == "bK" and ind == 1:
                         return True
-                    ind += 1
-                elif not white and currPos[:2] in {"wb", "wq", "wK"}:
-                    return True
+                    elif currPos[:2] in {"bb", "bq"}:
+                        return True
+                    break
                 else:
+                    if currPos[:2] == "wp" and ind == 1 and r > 0:
+                        return True
+                    elif currPos[:2] == "wK" and ind == 1:
+                        return True
+                    elif currPos[:2] in {"wb", "wq"}:
+                        return True
                     break
         return False
