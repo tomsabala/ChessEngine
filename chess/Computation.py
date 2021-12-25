@@ -125,15 +125,15 @@ class Computation:
             for move in validMoves:  # we want to every move evaluate position afterwards
                 engine.makeMove(move, True)  # play move
                 # evaluate vest move score
-                currEval = self.minimax(depth-1, engine, engine.getValidMoves(), False, alpha, beta)[0]
+                currEval = self.minimax(depth-1, engine, engine.getValidMoves(), False, alpha, beta)
                 # checkin whether eval is bigger than currEval
-                if currEval > Eval:
-                    Eval = currEval
-                    bestMove = move
+                if currEval[0] > Eval:
+                    Eval = currEval[0]
+                    bestMove = currEval[1]
                 # return move backwards
                 engine.undoMove(True)
                 # updating alpha
-                alpha = max(alpha, currEval)
+                alpha = max(alpha, currEval[0])
                 # pruning tree
                 if beta <= alpha:
                     break
@@ -142,12 +142,12 @@ class Computation:
             Eval = float("inf")
             for move in validMoves:
                 engine.makeMove(move, True)
-                currEval = self.minimax(depth-1, engine, engine.getValidMoves(), True, alpha, beta)[0]
-                if currEval < Eval:
-                    Eval = currEval
-                    bestMove = move
+                currEval = self.minimax(depth-1, engine, engine.getValidMoves(), True, alpha, beta)
+                if currEval[0] < Eval:
+                    Eval = currEval[0]
+                    bestMove = currEval[1]
                 engine.undoMove(True)
-                beta = min(beta, currEval)
+                beta = min(beta, currEval[0])
                 if alpha >= beta:
                     break
         return Eval, bestMove
