@@ -9,7 +9,7 @@ class Computation:
     in addition, it's declaring the strategy of the engine
     """
     # this dictionary is a piece score dictionary
-    piecesScore = {"K": 100, "q": 10, "r": 5,
+    piecesScore = {"K": 200, "q": 9, "r": 5,
                    "b": 3, "k": 3, "p": 1}
     # all next matrices are a board control units seperated by piece type and color
     # white king board control
