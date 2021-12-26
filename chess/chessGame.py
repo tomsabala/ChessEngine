@@ -28,7 +28,7 @@ def loadImages(images):
                                           (square_size, square_size))
 
 
-def main(setOpt):
+def main(setOpt, engine):
     """
     def main will deal user input and update screen
 
@@ -39,7 +39,6 @@ def main(setOpt):
     screen.fill(p.Color('white'))
 
     """ open a new chess engine from chessBoard && reloading pieces png"""
-    engine = chs.chessBoard()
     loadImages(images)
 
     """ getting all valid moves """
@@ -142,6 +141,121 @@ def drawPieces(board, screen):
                 screen.blit(images[piece], p.Rect(j * square_size, i * square_size, square_size, square_size))
 
 
+def applyNotations(engine, notations):
+    for note in notations:
+        rowStart = chs.Move.rankToRow[note[1]]
+        colStart = chs.Move.rankToCol[note[0]]
+        rowEnd = chs.Move.rankToRow[note[3]]
+        colEnd = chs.Move.rankToCol[note[2]]
+        move = chs.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
+        engine.makeMove(move)
+
+
+def setNotations():
+    screen = p.display.set_mode((800, 800))
+    # Fill background
+    background = p.Surface(screen.get_size())
+    background = background.convert()
+    background.fill(p.Color(255, 229, 204))
+
+    # setting headline
+    headlineFont = p.font.SysFont("Notation Adder", 80)
+    headline = headlineFont.render("Notation Adder", True, p.Color("cornflowerblue"))
+    headlinePos = headline.get_rect()
+    headlinePos.centerx = background.get_rect().centerx
+
+    # set sub headline
+    subHeadlineFont = p.font.SysFont("Notation", 50)
+    subHeadline = subHeadlineFont.render("Notation", True, p.Color("darkblue"))
+    subHeadlinePos = subHeadline.get_rect()
+    subHeadlinePos.x = 327
+    subHeadlinePos.y = 250
+
+    # set sub exit line
+    exitLineFont = p.font.SysFont("press the exit button to go back", 30)
+    exitLine = exitLineFont.render("press the exit button to go back", True, p.Color("darkblue"))
+    exitLinePos = exitLine.get_rect()
+    exitLinePos.x = 250
+    exitLinePos.y = 760
+
+    # set warning line
+    warningFont = p.font.SysFont("WARNING", 40)
+    warningLine = warningFont.render("WARNING", True, p.Color("red"))
+    warningLinePos = warningLine.get_rect()
+    warningLinePos.x = 335
+    warningLinePos.y = 600
+
+    # set guide line1
+    guideLineFont1 = p.font.SysFont(
+        "This program is not checking weather your notations are legal or not,", 30)
+    guideLine1 = guideLineFont1.render(
+        "This program is not checking weather your notations are legal or not,", True, p.Color("darkblue"))
+    guideLinePos1 = guideLine1.get_rect()
+    guideLinePos1.x = 60
+    guideLinePos1.y = 640
+
+    # set guide line2
+    guideLineFont2 = p.font.SysFont("make sure you type them right", 30)
+    guideLine2 = guideLineFont2.render("make sure you type them right", True, p.Color("darkblue"))
+    guideLinePos2 = guideLine2.get_rect()
+    guideLinePos2.x = 250
+    guideLinePos2.y = 680
+
+    notationFont = p.font.Font(None, 32)
+    clock = p.time.Clock()
+    input_box = p.Rect(300, 300, 140, 32)
+    color_inactive = p.Color('darkblue')
+    color_active = p.Color('cornflowerblue')
+    color = color_inactive
+    active = False
+    done = False
+
+    notations = []
+    currNot = ""
+    while not done:
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                done = True
+            if event.type == p.MOUSEBUTTONDOWN:
+                # If the user clicked on the input_box rect.
+                if input_box.collidepoint(event.pos):
+                    # Toggle the active variable.
+                    active = not active
+                else:
+                    active = False
+                # Change the current color of the input box.
+                color = color_active if active else color_inactive
+            if event.type == p.KEYDOWN:
+                if active:
+                    if event.key == p.K_RETURN:
+                        notations.append(currNot)
+                        currNot = ""
+                    elif event.key == p.K_BACKSPACE:
+                        currNot = currNot[:-1]
+                    else:
+                        currNot += event.unicode
+
+        screen.fill((255, 229, 204))
+        # Render the current text.
+        txt_surface = notationFont.render(currNot, True, color)
+        # Resize the box if the text is too long.
+        width = max(200, txt_surface.get_width() + 10)
+        input_box.w = width
+        # Blit the text.
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        screen.blit(headline, headlinePos)
+        screen.blit(subHeadline, subHeadlinePos)
+        screen.blit(exitLine, exitLinePos)
+        screen.blit(guideLine1, guideLinePos1)
+        screen.blit(guideLine2, guideLinePos2)
+        screen.blit(warningLine, warningLinePos)
+        # Blit the input_box rect.
+        p.draw.rect(screen, color, input_box, 2)
+        p.display.flip()
+        clock.tick(30)
+    return notations
+
+
 def settings():
     screen = p.display.set_mode((800, 800))
     p.display.set_caption('Chess Game')
@@ -188,6 +302,11 @@ def settings():
     opt4pos.x = 215
     opt4pos.y = 460
 
+    editor = fontopt.render("Click -e- for a editing start positions", True, p.Color("darkblue"))
+    editorPos = editor.get_rect()
+    editorPos.x = 195
+    editorPos.y = 540
+
     background.blit(bottomHeadline, bottomHeadlinePos)
     background.blit(subHeadline, subHeadlinePos)
     background.blit(headline, headlinePos)
@@ -195,28 +314,36 @@ def settings():
     background.blit(opt2, opt2pos)
     background.blit(opt3, opt3pos)
     background.blit(opt4, opt4pos)
+    background.blit(editor, editorPos)
 
     # Blit everything to the screen
     screen.blit(background, (0, 0))
     p.display.flip()
 
+    # creating engine
+    engine = chs.chessBoard()
     # Event loop
     running = True
+    # crating level dictionary
+    levelAndKey = {p.K_0: 0, p.K_1: 1, p.K_2: 2, p.K_3: 3, p.K_4: 4, p.K_e: setNotations}
+    notations = []
     while running:
         for event in p.event.get():
             if event.type == p.QUIT:
                 running = False
             if event.type == p.KEYDOWN:
-                if event.key == p.K_0:
-                    main(0)
-                if event.key == p.K_1:
-                    main(1)
-                if event.key == p.K_2:
-                    main(2)
-                if event.key == p.K_3:
-                    main(3)
-                if event.key == p.K_4:
-                    main(4)
+                try:
+                    if event.key == p.K_e:
+                        notations = setNotations()
+                    else:
+                        if len(notations) == 0:
+                            main(levelAndKey[event.key], engine)
+                        else:
+                            applyNotations(engine, notations)
+                            notations = []
+                            main(levelAndKey[event.key], engine)
+                except KeyError:
+                    pass
 
         screen.blit(background, (0, 0))
         p.display.flip()
