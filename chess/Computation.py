@@ -1,3 +1,5 @@
+import math
+import chessEngine
 import numpy as np
 
 
@@ -119,7 +121,7 @@ class Computation:
         """
         if depth == 0 or len(validMoves) == 0:  # base case, depth is zero
             return self.evalPosition(engine), engine.moveLog[-1]  # return evaluation of engine state and the last move
-        bestMove = None  # initial a best-move indicator
+        bestMoves = None  # initial a best-move indicator
         if maximize:  # if we want to maximize player gain
             Eval = float("-inf")  # evaluation score
             for move in validMoves:  # we want to every move evaluate position afterwards
@@ -129,7 +131,7 @@ class Computation:
                 # checkin whether eval is bigger than currEval
                 if currEval[0] > Eval:
                     Eval = currEval[0]
-                    bestMove = currEval[1]
+                    bestMoves = move
                 # return move backwards
                 engine.undoMove(True)
                 # updating alpha
@@ -145,12 +147,19 @@ class Computation:
                 currEval = self.minimax(depth-1, engine, engine.getValidMoves(), True, alpha, beta)
                 if currEval[0] < Eval:
                     Eval = currEval[0]
-                    bestMove = currEval[1]
+                    bestMoves = move
                 engine.undoMove(True)
                 beta = min(beta, currEval[0])
                 if alpha >= beta:
                     break
-        return Eval, bestMove
+        return Eval, bestMoves
+
+    def sideCheck(self, board1, board2):
+        for i in range(8):
+            for j in range(8):
+                if board2[i][j] != board1[i][j]:
+                    return False
+        return True
 
     def evalPosition(self, engine):
         """
@@ -159,7 +168,23 @@ class Computation:
         :return: return position score
         """
         # strategy... (need to be improved)
-        return self.materialPieces(engine) + self.boardControl(engine)
+        materialScore = self.materialPieces(engine)
+        boardScore = self.boardControl(engine)
+        bonus = self.bonus(engine)
+        penalty = self.penalty(engine)
+        return materialScore + boardScore + bonus + penalty
+
+    def bonus(self, engine):
+        rul = chessEngine.Rules()
+        if rul.isCheck(engine.board, True):
+            return 5
+        return 0
+
+    def penalty(self, engine):
+        rul = chessEngine.Rules()
+        if rul.isCheck(engine.board, False):
+            return -5
+        return 0
 
     def materialPieces(self, engine):
         """

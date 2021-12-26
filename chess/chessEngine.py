@@ -30,9 +30,9 @@ class EndGame:
         :return: boolean value true iff check-mate
         """
         rul = Rules()
-        if self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.whitePieces["wK"], self.engine.whiteTurn):
+        if self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.whiteTurn):
             return self.end.WHITE
-        elif not self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.blackPieces["bK"], False):
+        elif not self.engine.whiteTurn and rul.isCheck(self.engine.board, False):
             return self.end.BLACK
         return self.end.DRAW
 
@@ -586,11 +586,10 @@ class Rules:
 
     def isCheck(self, board, white=True):
         kingPos = ()
+        kingColor = {True: "wK", False: "bK"}
         for r in range(8):
             for c in range(8):
-                if board[r][c] == "wK" and white:
-                    kingPos = (r, c)
-                elif board[r][c] == "bK" and not white:
+                if board[r][c] == kingColor[white]:
                     kingPos = (r, c)
         return self.isInThreat(board, kingPos, white)
 
@@ -682,7 +681,10 @@ class Rules:
         :param white: is a white piece or not
         :return: true iff piece is under threat from a queen, bishop or a King/pawn if can
         """
-        row, col = piece[0], piece[1]
+        try:
+            row, col = piece[0], piece[1]
+        except IndexError:
+            print()
         dirDict = {0: (1, 1), 1: (-1, 1), 2: (-1, -1), 3: (1, -1)}
         for i in range(4):
             r, c = dirDict[i]

@@ -2,10 +2,7 @@
 This class is the main class responsible for running the game, setting the game to start, visualize output
 and receive input from program.
 """
-import numpy as np
 import pygame as p
-import pygame.font
-
 import chessEngine as chs
 import Computation as cmp
 
@@ -61,7 +58,7 @@ def main(setOpt):
         for e in p.event.get():
             if e.type == p.QUIT:  # if pygame is ended running turn false
                 running = False
-            if not engine.whiteTurn:
+            if not engine.whiteTurn and setOpt != 0:
                 drawGameState(engine.board, screen, (), [])
                 time.tick(MAX_FPS)
                 p.display.flip()
@@ -105,8 +102,8 @@ def main(setOpt):
                 square_selected = tuple()
                 curr_move = []
                 if len(validMoves) == 0:
-                        running = False
-                        print(endGame.endGame())
+                    running = False
+                    print(endGame.endGame().value)
         drawGameState(engine.board, screen, square_selected, validMoves)
         time.tick(MAX_FPS)
         p.display.flip()
@@ -210,6 +207,8 @@ def settings():
             if event.type == p.QUIT:
                 running = False
             if event.type == p.KEYDOWN:
+                if event.key == p.K_0:
+                    main(0)
                 if event.key == p.K_1:
                     main(1)
                 if event.key == p.K_2:
