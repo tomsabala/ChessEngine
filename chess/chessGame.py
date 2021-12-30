@@ -91,10 +91,13 @@ def main(setOpt, engine):
                             curr_move = []
                 elif e.type == p.KEYDOWN:
                     if e.key == p.K_z:
-                        engine.undoMove()
-                        moveMade = True
-                        square_selected = tuple()
-                        curr_move = []
+                        try:
+                            engine.undoMove(engine.moveLog[-1])
+                            moveMade = True
+                            square_selected = tuple()
+                            curr_move = []
+                        except IndexError:
+                            pass
             if moveMade:
                 moveMade = False
                 validMoves = engine.getValidMoves()
@@ -102,7 +105,7 @@ def main(setOpt, engine):
                 curr_move = []
                 if len(validMoves) == 0:
                     running = False
-                    print(endGame.endGame().value)
+                    print(endGame.endGame(engine.kingPos[engine.whiteTurn]).value)
         drawGameState(engine.board, screen, square_selected, validMoves)
         time.tick(MAX_FPS)
         p.display.flip()
@@ -328,10 +331,15 @@ def settings():
     levelAndKey = {p.K_0: 0, p.K_1: 1, p.K_2: 2, p.K_3: 3, p.K_4: 4, p.K_e: setNotations}
     notations = []
     while running:
+        engine = chs.chessBoard()
         for event in p.event.get():
             if event.type == p.QUIT:
                 running = False
             if event.type == p.KEYDOWN:
+                if event.key == p.K_r:
+                    testNot = ["g2g4", "b8c6", "g4g5", "d7d5", "g1f3", "e7e5", "b2b3", "c8f5", "c1b2", "f5c2", "d1c2", "c6b4"]
+                    applyNotations(engine, testNot)
+                    main(4, engine)
                 try:
                     if event.key == p.K_e:
                         notations = setNotations()
