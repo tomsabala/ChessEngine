@@ -1,7 +1,7 @@
+import copy
 import math
 import chessEngine
 import numpy as np
-
 
 class Computation:
     """
@@ -104,7 +104,7 @@ class Computation:
             move = np.random.choice(validMoves)
             return move
         # return a move from minimax algo.
-        return self.minimax(self.lvl, engine, validMoves, maximize=True)[1]
+        return self.minimax(self.lvl, chessEngine.chessBoard.__copy__(engine), validMoves, maximize=True)[1]
 
     def minimax(self, depth, engine, validMoves, maximize, alpha=float("-inf"), beta=float("inf")):
         """
@@ -121,45 +121,38 @@ class Computation:
         """
         if depth == 0 or len(validMoves) == 0:  # base case, depth is zero
             return self.evalPosition(engine), engine.moveLog[-1]  # return evaluation of engine state and the last move
-        bestMoves = None  # initial a best-move indicator
+        bestMove = None  # initial a best-move indicator
         if maximize:  # if we want to maximize player gain
-            Eval = float("-inf")  # evaluation score
+            eval = float("-inf")  # evaluation score
             for move in validMoves:  # we want to every move evaluate position afterwards
                 engine.makeMove(move, True)  # play move
                 # evaluate vest move score
                 currEval = self.minimax(depth-1, engine, engine.getValidMoves(), False, alpha, beta)
-                # checkin whether eval is bigger than currEval
-                if currEval[0] > Eval:
-                    Eval = currEval[0]
-                    bestMoves = move
                 # return move backwards
-                engine.undoMove(True)
+                engine.undoMove(move, True)
+                # checkin whether eval is bigger than currEval
+                if currEval[0] > eval:
+                    eval = currEval[0]
+                    bestMove = move
                 # updating alpha
                 alpha = max(alpha, currEval[0])
                 # pruning tree
                 if beta <= alpha:
-                    break
+                    return eval, bestMove
         else:
             # this block is pretty much similar to the one above, only now we want to minimize player loss
-            Eval = float("inf")
+            eval = float("inf")
             for move in validMoves:
                 engine.makeMove(move, True)
                 currEval = self.minimax(depth-1, engine, engine.getValidMoves(), True, alpha, beta)
-                if currEval[0] < Eval:
-                    Eval = currEval[0]
-                    bestMoves = move
-                engine.undoMove(True)
+                engine.undoMove(move, True)
+                if currEval[0] < eval:
+                    eval = currEval[0]
+                    bestMove = move
                 beta = min(beta, currEval[0])
                 if alpha >= beta:
-                    break
-        return Eval, bestMoves
-
-    def sideCheck(self, board1, board2):
-        for i in range(8):
-            for j in range(8):
-                if board2[i][j] != board1[i][j]:
-                    return False
-        return True
+                    return eval, bestMove
+        return eval, bestMove
 
     def evalPosition(self, engine):
         """
@@ -176,13 +169,13 @@ class Computation:
 
     def bonus(self, engine):
         rul = chessEngine.Rules()
-        if rul.isCheck(engine.board, True):
+        if rul.isCheck(engine.kingPos[True], engine.board, True):
             return 5
         return 0
 
     def penalty(self, engine):
         rul = chessEngine.Rules()
-        if rul.isCheck(engine.board, False):
+        if rul.isCheck(engine.kingPos[False], engine.board, False):
             return -5
         return 0
 
