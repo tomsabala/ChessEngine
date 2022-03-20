@@ -18,7 +18,7 @@ I used python with two main packages:
 - NumPy
 - Pygame 
 
-![Game](chess/Images/chessEngineL42.gif)
+![Game](chess/Images/chessEngineL43.gif)
 
 ### TODO
 At current point, the engine able to play one on one game and allows the player choose the opponents level rank from 0 to 4
