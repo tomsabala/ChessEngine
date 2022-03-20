@@ -8,6 +8,11 @@ I used help from two main step-by-step guides:
 And also the wiki chess programming page:
 [chess-programming](https://www.chessprogramming.org/Main_Page)
 
+### Get Started :
+1) Clone project to a directory on your pc.
+2) Install dependencies - pygame package `python3 -m pip install -U pygame --user` on the same directory.
+3) Run command `python3 chessGame.py`
+
 ### Implementaion :
 I used python with two main packages:   
 - numpy
