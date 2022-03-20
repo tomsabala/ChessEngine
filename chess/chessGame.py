@@ -22,7 +22,7 @@ def loadImages(images):
     Loading Images
     every piece load a related image from chess/Images/*
     """
-    pieces = ["wp", "bp", "wr", "br", "wk", "bk", "wb", "bb", "wq", "bq", "wK", "bK"]  # all possible, pieces
+    pieces = ["wp", "bp", "wr", "br", "wk", "bk", "wb", "bb", "wq", "bq", "wX", "bX"]  # all possible, pieces
     for i, piece in enumerate(pieces):  # for each piece load his related image
         images[piece] = p.transform.scale(p.image.load("Images/" + piece + ".png"),
                                           (square_size, square_size))

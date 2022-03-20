@@ -11,7 +11,7 @@ class Computation:
     in addition, it's declaring the strategy of the engine
     """
     # this dictionary is a piece score dictionary
-    piecesScore = {"K": 200, "q": 9, "r": 5,
+    piecesScore = {"X": 200, "q": 9, "r": 5,
                    "b": 3, "k": 3, "p": 1}
     # all next matrices are a board control units seperated by piece type and color
     # white king board control
@@ -82,9 +82,9 @@ class Computation:
     blackPawnControl = whitePawnControl[::-1]
     # a dictionary of piece type to board control matrix
     piecesControl = {"wp": whitePawnControl, "wr": whiteRookControl, "wb": whiteBishopControl,
-                         "wk": whiteKnightControl, "wq": whiteQueenControl, "wK": whiteKingControl,
+                         "wk": whiteKnightControl, "wq": whiteQueenControl, "wX": whiteKingControl,
                          "bp": blackPawnControl, "br": blackRookControl, "bb": blackBishopControl,
-                         "bk": blackKnightControl, "bq": blackQueenControl, "bK": blackKingControl}
+                         "bk": blackKnightControl, "bq": blackQueenControl, "bX": blackKingControl}
 
     def __init__(self, level):
         """
