@@ -1,5 +1,5 @@
 # ChessEngine
-## general Info. :
+### general Info. :
 I've started this project for a self-study challenge, after having been exposed from several places.
 I used help from two main step-by-step guides:
 1) [A step-by-step guide to building a simple chess AI](https://www.freecodecamp.org/news/simple-chess-ai-step-by-step-1d55a9266977/)
@@ -8,7 +8,7 @@ I used help from two main step-by-step guides:
 And also the wiki chess programming page:
 [chess-programming](https://www.chessprogramming.org/Main_Page)
 
-## Implementaion :
+### Implementaion :
 I used python with two main packages:   
 - numpy
 - pygame 
@@ -18,7 +18,7 @@ You visit his youtube channel at this link: https://www.youtube.com/channel/UCaE
 
 p.s In the next step i would like to move to a more comfturble GUI workframe.
 
-## TODO
+### TODO
 At current point, the engine able to play one on one game and allows the player choose the opponents level rank from 0 to 4
 where -0- replies a randome player, -1- one step forward computing engine, ... , -4- four steps computing ahead.
 
