@@ -2,7 +2,7 @@
 ## general Info.
 I've started this project as a place to be challenged in, after I've been exposed to this kind of project.
 For sources I took help from two kind of articles:
-1) https://www.freecodecamp.org/news/simple-chess-ai-step-by-step-1d55a9266977/
+1) [A step-by-step guide to building a simple chess AI](https://www.freecodecamp.org/news/simple-chess-ai-step-by-step-1d55a9266977/)
 2) https://andreasstckl.medium.com/writing-a-chess-program-in-one-day-30daff4610ec
 
 and of course the wiki chess programming page:
