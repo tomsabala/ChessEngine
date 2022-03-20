@@ -337,7 +337,7 @@ def settings():
                 running = False
             if event.type == p.KEYDOWN:
                 if event.key == p.K_r:
-                    testNot = ["g2g4", "b8c6", "g4g5", "d7d5", "g1f3", "e7e5", "b2b3", "c8f5", "c1b2", "f5c2", "d1c2", "c6b4"]
+                    testNot = ["g1f3", "b8c6", "e2e3", "g8f6", "f3d4", "d7d5", "f2f3", "e7e5", "e1h4", "e5d4", "e3d4", "c6d4", "d2d3", "e8a4", "c1g5", "a4c2", "d1e1", "f8b4"]
                     applyNotations(engine, testNot)
                     main(4, engine)
                 try:
