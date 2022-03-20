@@ -57,40 +57,44 @@ def main(setOpt, engine):
         for e in p.event.get():
             if e.type == p.QUIT:  # if pygame is ended running turn false
                 running = False
-            if not engine.whiteTurn and setOpt != 0:
-                drawGameState(engine.board, screen, (), [])
+            if not engine.whiteTurn and setOpt != 0:  # opponents turn
+                drawGameState(engine.board, screen, (), [])  # draw game state
                 time.tick(MAX_FPS)
                 p.display.flip()
-                move = AIComputer.moveCompute(engine, validMoves)
-                print(move.getChessNotation())
-                engine.makeMove(move)
+                move = AIComputer.moveCompute(engine, validMoves)  # generate move
+                print(move.getChessNotation())  # display move annotation
+                engine.makeMove(move)  # make move
                 moveMade = True
                 square_selected = tuple()
                 curr_move = []
-            else:
-                if e.type == p.MOUSEBUTTONDOWN:
+            else:  # player turn
+                if e.type == p.MOUSEBUTTONDOWN:  # picked a piece
+                    # collect piece details
                     col, row = p.mouse.get_pos()
                     row = row // square_size
                     col = col // square_size
-                    if square_selected == (row, col):
+                    if square_selected == (row, col):  # clicked on the same piece twice
+                        # restart player pick
                         square_selected = tuple()
                         curr_move = []
-                    else:
+                    else:  # different pick
+                        # adding pick details
                         square_selected = (row, col)
                         curr_move.append(square_selected)
                         if len(curr_move) == 1 and engine.board[row][col] == "---":
-                            square_selected = tuple()
+                            # first pick and no piece was clicked
+                            square_selected = tuple()  # restart
                             curr_move = []
-                        elif len(curr_move) == 2:
-                            move = chs.Move(curr_move[0], curr_move[1], engine.board)
-                            if move in validMoves:
-                                print(move.getChessNotation())
-                                engine.makeMove(move)
+                        elif len(curr_move) == 2:  # second click
+                            move = chs.Move(curr_move[0], curr_move[1], engine.board)  # create move
+                            if move in validMoves:  # if move is legal
+                                print(move.getChessNotation())  # print notation
+                                engine.makeMove(move)  # make move
                                 moveMade = True
                             square_selected = tuple()
                             curr_move = []
-                elif e.type == p.KEYDOWN:
-                    if e.key == p.K_z:
+                elif e.type == p.KEYDOWN:  # keyboard click
+                    if e.key == p.K_z:  # reverse click, undo
                         try:
                             engine.undoMove(engine.moveLog[-1])
                             moveMade = True
@@ -98,20 +102,24 @@ def main(setOpt, engine):
                             curr_move = []
                         except IndexError:
                             pass
-            if moveMade:
+            if moveMade:  # if move was made
                 moveMade = False
-                validMoves = engine.getValidMoves()
+                validMoves = engine.getValidMoves()  # generate valid moves
                 square_selected = tuple()
                 curr_move = []
-                if len(validMoves) == 0:
+                if len(validMoves) == 0:  # no legal moves available
+                    # end game
                     running = False
                     print(endGame.endGame(engine.kingPos[engine.whiteTurn]).value)
-        drawGameState(engine.board, screen, square_selected, validMoves)
+        drawGameState(engine.board, screen, square_selected, validMoves)  # draw game state
         time.tick(MAX_FPS)
         p.display.flip()
 
 
 def highlightSquares(board, screen, piece, validMoves):
+    """
+    DISPLAY highlighted squares
+    """
     if piece != ():
         for move in validMoves:
             if move.selectedPiece == board[piece[0]][piece[1]]:
@@ -123,29 +131,48 @@ def highlightSquares(board, screen, piece, validMoves):
 
 
 def drawGameState(board, screen, piece, validMoves):
-    drawBoard(screen)
-    highlightSquares(board, screen, piece, validMoves)
-    drawPieces(board, screen)
+    """
+    DISPLAY draw game board, pieces, and annotations
+    :param board: current board status
+    :param screen: screen board
+    :param piece: active piece
+    :param validMoves: piece valid moves
+    """
+    drawBoard(screen)  # display board
+    highlightSquares(board, screen, piece, validMoves)  # highlight piece moves
+    drawPieces(board, screen)  # display pieces
 
 
 def drawBoard(screen):
-    colors = [p.Color("lightsteelblue"), p.Color("cornflowerblue")]
+    """
+    DISPLAY draw board table
+    """
+    colors = [p.Color("lightsteelblue"), p.Color("cornflowerblue")]  # colors
     for i in range(8):
         for j in range(8):
-            color = colors[((i + j) % 2)]
-            p.draw.rect(screen, color, p.Rect(j * square_size, i * square_size, square_size, square_size))
+            color = colors[((i + j) % 2)]  # color pick
+            p.draw.rect(screen, color, p.Rect(j * square_size, i * square_size, square_size, square_size))  # draw
 
 
 def drawPieces(board, screen):
+    """
+    DISPLAY pieces on board
+    """
     for i in range(8):
         for j in range(8):
-            piece = board[i][j][:2]
+            piece = board[i][j][:2]  # piece pick
             if piece != "--":
-                screen.blit(images[piece], p.Rect(j * square_size, i * square_size, square_size, square_size))
+                screen.blit(images[piece], p.Rect(j * square_size, i * square_size, square_size, square_size))  # draw
 
 
 def applyNotations(engine, notations):
-    for note in notations:
+    """
+    EVAL start game positions according to given notations
+    :param engine: game obj.
+    :param notations: notations to modify
+    """
+    for note in notations:  # for each notation in notations
+        # create and pull move according to note
         rowStart = chs.Move.rankToRow[note[1]]
         colStart = chs.Move.rankToCol[note[0]]
         rowEnd = chs.Move.rankToRow[note[3]]
@@ -155,6 +182,9 @@ def applyNotations(engine, notations):
 
 
 def setNotations():
+    """
+    Insert notations to machine memo
+    """
     screen = p.display.set_mode((800, 800))
     # Fill background
     background = p.Surface(screen.get_size())
