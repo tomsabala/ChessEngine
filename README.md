@@ -20,7 +20,7 @@ I used python with two main packages:
 
 ![Game](chess/Images/chessEngineL43.gif)
 
-### TODO
+### TODO :
 At current point, the engine able to play one on one game and allows the player choose the opponents level rank from 0 to 4
 where -0- replies a randome player, -1- one step forward computing engine, ... , -4- four steps computing ahead.
 
