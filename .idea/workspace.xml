@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="added documentation" />
+    <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="remove gif">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chess/chessGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/chessGame.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,22 +35,26 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="21P2sXTkQAhnXMATdRKOOMEq7wE" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/workspace/projectEulerPlot-ts" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/chess/Images" />
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/chess/Images" />
       <recent name="$PROJECT_DIR$/chess" />
     </key>
   </component>
@@ -241,7 +248,7 @@
       <workItem from="1641597324465" duration="598000" />
       <workItem from="1644852182322" duration="610000" />
       <workItem from="1645438021984" duration="27000" />
-      <workItem from="1647780172174" duration="4039000" />
+      <workItem from="1647780172174" duration="7533000" />
     </task>
     <task id="LOCAL-00001" summary="added documentation">
       <created>1640383644950</created>
@@ -257,7 +264,42 @@
       <option name="project" value="LOCAL" />
       <updated>1647785489166</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="added documentation">
+      <created>1647785845763</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1647785845764</updated>
+    </task>
+    <task id="LOCAL-00004" summary="added documentation">
+      <created>1647785876647</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1647785876647</updated>
+    </task>
+    <task id="LOCAL-00005" summary="added gif002">
+      <created>1647786345653</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1647786345653</updated>
+    </task>
+    <task id="LOCAL-00006" summary="added gif003">
+      <created>1647786461824</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1647786461824</updated>
+    </task>
+    <task id="LOCAL-00007" summary="remove gif">
+      <created>1647786605427</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1647786605427</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,8 +328,12 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="added documentation" />
-    <option name="LAST_COMMIT_MESSAGE" value="added documentation" />
+    <MESSAGE value="added gif002" />
+    <MESSAGE value="added gif003" />
+    <MESSAGE value="remove gif" />
+    <option name="LAST_COMMIT_MESSAGE" value="remove gif" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
