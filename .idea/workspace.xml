@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="init">
+    <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="change king char K -&gt; X">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chess/chessGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/chessGame.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -247,7 +248,8 @@
       <workItem from="1641597324465" duration="598000" />
       <workItem from="1644852182322" duration="610000" />
       <workItem from="1645438021984" duration="27000" />
-      <workItem from="1647780172174" duration="9615000" />
+      <workItem from="1647780172174" duration="10106000" />
+      <workItem from="1647860252535" duration="1256000" />
     </task>
     <task id="LOCAL-00001" summary="added documentation">
       <created>1640383644950</created>
@@ -312,7 +314,14 @@
       <option name="project" value="LOCAL" />
       <updated>1647789744614</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="change king char K -&gt; X">
+      <created>1647793599512</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1647793599512</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -348,7 +357,8 @@
     <MESSAGE value="remove gif" />
     <MESSAGE value="add documentation" />
     <MESSAGE value="init" />
-    <option name="LAST_COMMIT_MESSAGE" value="init" />
+    <MESSAGE value="change king char K -&gt; X" />
+    <option name="LAST_COMMIT_MESSAGE" value="change king char K -&gt; X" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -376,7 +386,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ChessEngine$main.coverage" NAME="main Coverage Results" MODIFIED="1638127364056" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ChessEngine$scratch.coverage" NAME="scratch Coverage Results" MODIFIED="1640898686897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
-    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1647791422307" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
+    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1647861508166" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
     <SUITE FILE_PATH="coverage/ChessEngine$boardRepres.coverage" NAME="boardRepres Coverage Results" MODIFIED="1638127540027" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

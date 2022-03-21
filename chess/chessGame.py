@@ -10,8 +10,8 @@ p.init()  # initialize pygame
 '''
 initialize board sizes and square size
 '''
-board_height = board_width = 800
-square_size = 800 // 8
+board_height = board_width = 600
+square_size = 600 // 8
 images = dict()
 MAX_FPS = 15
 setOpt = 1
@@ -185,58 +185,67 @@ def setNotations():
     """
     Insert notations to machine memo
     """
-    screen = p.display.set_mode((800, 800))
+    screen = p.display.set_mode((600, 600))
     # Fill background
     background = p.Surface(screen.get_size())
     background = background.convert()
     background.fill(p.Color(255, 229, 204))
 
     # setting headline
-    headlineFont = p.font.SysFont("Notation Adder", 80)
+    headlineFont = p.font.SysFont("Notation Adder", 60)
     headline = headlineFont.render("Notation Adder", True, p.Color("cornflowerblue"))
     headlinePos = headline.get_rect()
     headlinePos.centerx = background.get_rect().centerx
 
     # set sub headline
-    subHeadlineFont = p.font.SysFont("Notation", 50)
+    subHeadlineFont = p.font.SysFont("Notation", 40)
     subHeadline = subHeadlineFont.render("Notation", True, p.Color("darkblue"))
     subHeadlinePos = subHeadline.get_rect()
-    subHeadlinePos.x = 327
-    subHeadlinePos.y = 250
+    subHeadlinePos.x = 240
+    subHeadlinePos.y = 120
 
     # set sub exit line
     exitLineFont = p.font.SysFont("press the exit button to go back", 30)
     exitLine = exitLineFont.render("press the exit button to go back", True, p.Color("darkblue"))
     exitLinePos = exitLine.get_rect()
-    exitLinePos.x = 250
-    exitLinePos.y = 760
+    exitLinePos.x = 150
+    exitLinePos.y = 400
 
     # set warning line
     warningFont = p.font.SysFont("WARNING", 40)
     warningLine = warningFont.render("WARNING", True, p.Color("red"))
     warningLinePos = warningLine.get_rect()
-    warningLinePos.x = 335
-    warningLinePos.y = 600
+    warningLinePos.x = 240
+    warningLinePos.y = 440
 
     # set guide line1
     guideLineFont1 = p.font.SysFont(
-        "This program is not checking weather your notations are legal or not,", 30)
+        "This program is not checking weather", 30)
     guideLine1 = guideLineFont1.render(
-        "This program is not checking weather your notations are legal or not,", True, p.Color("darkblue"))
+        "This program is not checking weather", True, p.Color("darkblue"))
     guideLinePos1 = guideLine1.get_rect()
-    guideLinePos1.x = 60
-    guideLinePos1.y = 640
+    guideLinePos1.x = 120
+    guideLinePos1.y = 480
 
     # set guide line2
-    guideLineFont2 = p.font.SysFont("make sure you type them right", 30)
-    guideLine2 = guideLineFont2.render("make sure you type them right", True, p.Color("darkblue"))
+    guideLineFont2 = p.font.SysFont(
+        "your notations are legal or not,", 30)
+    guideLine2 = guideLineFont2.render(
+        "your notations are legal or not,", True, p.Color("darkblue"))
     guideLinePos2 = guideLine2.get_rect()
-    guideLinePos2.x = 250
-    guideLinePos2.y = 680
+    guideLinePos2.x = 160
+    guideLinePos2.y = 520
+
+    # set guide line3
+    guideLineFont3 = p.font.SysFont("make sure you type them correctly.", 30)
+    guideLine3 = guideLineFont3.render("make sure you type them correctly.", True, p.Color("darkblue"))
+    guideLinePos3 = guideLine3.get_rect()
+    guideLinePos3.x = 140
+    guideLinePos3.y = 560
 
     notationFont = p.font.Font(None, 32)
     clock = p.time.Clock()
-    input_box = p.Rect(300, 300, 140, 32)
+    input_box = p.Rect(200, 160, 140, 32)
     color_inactive = p.Color('darkblue')
     color_active = p.Color('cornflowerblue')
     color = color_inactive
@@ -281,6 +290,7 @@ def setNotations():
         screen.blit(exitLine, exitLinePos)
         screen.blit(guideLine1, guideLinePos1)
         screen.blit(guideLine2, guideLinePos2)
+        screen.blit(guideLine3, guideLinePos3)
         screen.blit(warningLine, warningLinePos)
         # Blit the input_box rect.
         p.draw.rect(screen, color, input_box, 2)
@@ -290,7 +300,7 @@ def setNotations():
 
 
 def settings():
-    screen = p.display.set_mode((800, 800))
+    screen = p.display.set_mode((600, 600))
     p.display.set_caption('Chess Game')
 
     # Fill background
@@ -299,16 +309,16 @@ def settings():
     background.fill(p.Color(255, 229, 204))
 
     # Display HeadLine
-    headlineFont = p.font.SysFont("Game Settings", 80)
+    headlineFont = p.font.SysFont("Game Settings", 60)
     headline = headlineFont.render("Game Settings", True, p.Color("cornflowerblue"))
     headlinePos = headline.get_rect()
     headlinePos.centerx = background.get_rect().centerx
 
-    subHeadlineFont = p.font.SysFont("Choose Difficulty: ", 50)
+    subHeadlineFont = p.font.SysFont("Choose Difficulty: ", 40)
     subHeadline = subHeadlineFont.render("Choose Difficulty: ", True, p.Color("darkblue"))
     subHeadlinePos = subHeadline.get_rect()
-    subHeadlinePos.x = 250
-    subHeadlinePos.y = 150
+    subHeadlinePos.x = 182
+    subHeadlinePos.y = 110
 
     bottomHeadline = headlineFont.render("Good Luck!", True, p.Color("cornflowerblue"))
     bottomHeadlinePos = bottomHeadline.get_rect()
@@ -317,28 +327,28 @@ def settings():
     fontopt = p.font.Font(None, 35)
     opt1 = fontopt.render("Click -1- for a random component (default)", True, p.Color("darkblue"))
     opt1pos = opt1.get_rect()
-    opt1pos.x = 155
-    opt1pos.y = 220
+    opt1pos.x = 55
+    opt1pos.y = 170
 
     opt2 = fontopt.render("Click -2- for a level 1 component", True, p.Color("darkblue"))
     opt2pos = opt2.get_rect()
-    opt2pos.x = 215
-    opt2pos.y = 300
+    opt2pos.x = 120
+    opt2pos.y = 230
 
     opt3 = fontopt.render("Click -3- for a level 2 component", True, p.Color("darkblue"))
     opt3pos = opt3.get_rect()
-    opt3pos.x = 215
-    opt3pos.y = 380
+    opt3pos.x = 120
+    opt3pos.y = 290
 
     opt4 = fontopt.render("Click -4- for a level 3 component", True, p.Color("darkblue"))
     opt4pos = opt4.get_rect()
-    opt4pos.x = 215
-    opt4pos.y = 460
+    opt4pos.x = 120
+    opt4pos.y = 350
 
     editor = fontopt.render("Click -e- for a editing start positions", True, p.Color("darkblue"))
     editorPos = editor.get_rect()
-    editorPos.x = 195
-    editorPos.y = 540
+    editorPos.x = 90
+    editorPos.y = 410
 
     background.blit(bottomHeadline, bottomHeadlinePos)
     background.blit(subHeadline, subHeadlinePos)
