@@ -15,9 +15,11 @@ And also the wiki chess programming page:
 linux - `python3 -m pip install -U pygame --user` <br />
 windows - `py -m pip install -U pygame --user` <br />
 **NumPy** <br />
-linux - `python3 -m install -U numpy --user` <br />
-windows - `py -m install -U numpy --user` <br />
-4) Run command `python3 chessGame.py`
+linux - `python3 -m pip install -U numpy --user` <br />
+windows - `py -m pip install -U numpy --user` <br />
+4) Run command - <br />
+linux - `python3 ~/chess/chessGame.py` <br />
+windows - `py ~/chess/chessGame.py' <br />
 
 ### Implementaion :
 I used python with two main packages:   
