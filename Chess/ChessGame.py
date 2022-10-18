@@ -3,29 +3,32 @@ This class is the main class responsible for running the game, setting the game 
 and receive input from program.
 """
 import pygame as p
-import chessEngine as chs
+import Chess.Move
+import ChessEngine as chs
 import Computation as cmp
-
+from Chess.ChessPieces.King import King
 p.init()  # initialize pygame
 '''
 initialize board sizes and square size
 '''
-board_height = board_width = 600
-square_size = 600 // 8
-images = dict()
+BOARD_HEIGHT = BOARD_WIDTH = 600
+SQUARE_SIZE = 600 // 8
+IMAGES = dict()
 MAX_FPS = 15
 setOpt = 1
+
+Notations = []
 
 
 def loadImages(images):
     """
     Loading Images
-    every piece load a related image from chess/Images/*
+    every piece load a related image from Chess/Images/*
     """
     pieces = ["wp", "bp", "wr", "br", "wk", "bk", "wb", "bb", "wq", "bq", "wX", "bX"]  # all possible, pieces
     for i, piece in enumerate(pieces):  # for each piece load his related image
         images[piece] = p.transform.scale(p.image.load("Images/" + piece + ".png"),
-                                          (square_size, square_size))
+                                          (SQUARE_SIZE, SQUARE_SIZE))
 
 
 def main(setOpt, engine):
@@ -34,12 +37,12 @@ def main(setOpt, engine):
 
     initialize 400x400 screen size and time
     """
-    screen = p.display.set_mode((board_height, board_width))
+    screen = p.display.set_mode((BOARD_HEIGHT, BOARD_WIDTH))
     time = p.time.Clock()
     screen.fill(p.Color('white'))
 
-    """ open a new chess engine from chessBoard && reloading pieces png"""
-    loadImages(images)
+    """ open a new Chess engine from chessBoard && reloading pieces png"""
+    loadImages(IMAGES)
 
     """ getting all valid moves """
     validMoves = engine.getValidMoves()
@@ -63,6 +66,7 @@ def main(setOpt, engine):
                 p.display.flip()
                 move = AIComputer.moveCompute(engine, validMoves)  # generate move
                 print(move.getChessNotation())  # display move annotation
+                Notations.append(move.getChessNotation())
                 engine.makeMove(move)  # make move
                 moveMade = True
                 square_selected = tuple()
@@ -71,8 +75,8 @@ def main(setOpt, engine):
                 if e.type == p.MOUSEBUTTONDOWN:  # picked a piece
                     # collect piece details
                     col, row = p.mouse.get_pos()
-                    row = row // square_size
-                    col = col // square_size
+                    row = row // SQUARE_SIZE
+                    col = col // SQUARE_SIZE
                     if square_selected == (row, col):  # clicked on the same piece twice
                         # restart player pick
                         square_selected = tuple()
@@ -81,14 +85,15 @@ def main(setOpt, engine):
                         # adding pick details
                         square_selected = (row, col)
                         curr_move.append(square_selected)
-                        if len(curr_move) == 1 and engine.board[row][col] == "---":
+                        if len(curr_move) == 1 and engine.board[row][col] is None:
                             # first pick and no piece was clicked
                             square_selected = tuple()  # restart
                             curr_move = []
                         elif len(curr_move) == 2:  # second click
-                            move = chs.Move(curr_move[0], curr_move[1], engine.board)  # create move
+                            move = Chess.Move.Move(curr_move[0], curr_move[1], engine.board)  # create move
                             if move in validMoves:  # if move is legal
                                 print(move.getChessNotation())  # print notation
+                                Notations.append(move.getChessNotation())
                                 engine.makeMove(move)  # make move
                                 moveMade = True
                             square_selected = tuple()
@@ -123,11 +128,11 @@ def highlightSquares(board, screen, piece, validMoves):
     if piece != ():
         for move in validMoves:
             if move.selectedPiece == board[piece[0]][piece[1]]:
-                s = p.Surface((square_size, square_size))
+                s = p.Surface((SQUARE_SIZE, SQUARE_SIZE))
                 s.set_alpha(100)
-                screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))
+                screen.blit(s, (move.colEnd * SQUARE_SIZE, move.rowEnd * SQUARE_SIZE))
                 s.fill(p.Color(255, 0, 127))
-                screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))
+                screen.blit(s, (move.colEnd * SQUARE_SIZE, move.rowEnd * SQUARE_SIZE))
 
 
 def drawGameState(board, screen, piece, validMoves):
@@ -151,7 +156,7 @@ def drawBoard(screen):
     for i in range(8):
         for j in range(8):
             color = colors[((i + j) % 2)]  # color pick
-            p.draw.rect(screen, color, p.Rect(j * square_size, i * square_size, square_size, square_size))  # draw
+            p.draw.rect(screen, color, p.Rect(j * SQUARE_SIZE, i * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))  # draw
 
 
 def drawPieces(board, screen):
@@ -160,9 +165,10 @@ def drawPieces(board, screen):
     """
     for i in range(8):
         for j in range(8):
-            piece = board[i][j][:2]  # piece pick
-            if piece != "--":
-                screen.blit(images[piece], p.Rect(j * square_size, i * square_size, square_size, square_size))  # draw
+            if board[i][j] is None:
+                continue
+            piece = board[i][j]  # piece pick
+            screen.blit(IMAGES[piece.name[:2]], p.Rect(j * SQUARE_SIZE, i * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
 def applyNotations(engine, notations):
@@ -171,14 +177,25 @@ def applyNotations(engine, notations):
     :param engine: game obj.
     :param notations: notations to modify
     """
+    count = 1
     for note in notations:  # for each notation in notations
         # create and pull move according to note
-        rowStart = chs.Move.rankToRow[note[1]]
-        colStart = chs.Move.rankToCol[note[0]]
-        rowEnd = chs.Move.rankToRow[note[3]]
-        colEnd = chs.Move.rankToCol[note[2]]
-        move = chs.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
+        if count == 273:
+            print("x")
+        count += 1
+        rowStart = Chess.Move.Move.rankToRow[note[1]]
+        colStart = Chess.Move.Move.rankToCol[note[0]]
+        rowEnd = Chess.Move.Move.rankToRow[note[3]]
+        colEnd = Chess.Move.Move.rankToCol[note[2]]
+        move = Chess.Move.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
         engine.makeMove(move)
+        white_pos, black_pos = engine.kingPos[True], engine.kingPos[False]
+        white_King = engine.board[white_pos[0]][white_pos[1]]
+        black_King = engine.board[black_pos[0]][black_pos[1]]
+        if not isinstance(white_King, King):
+            print("x")
+        if not isinstance(black_King, King):
+            print("x")
 
 
 def setNotations():
@@ -371,32 +388,130 @@ def settings():
     levelAndKey = {p.K_0: 0, p.K_1: 1, p.K_2: 2, p.K_3: 3, p.K_4: 4, p.K_e: setNotations}
     notations = []
     while running:
-        engine = chs.chessBoard()
         for event in p.event.get():
             if event.type == p.QUIT:
                 running = False
             if event.type == p.KEYDOWN:
                 if event.key == p.K_r:
-                    testNot = ["g1f3", "b8c6", "e2e3", "g8f6", "f3d4", "d7d5", "f2f3", "e7e5", "e1h4", "e5d4", "e3d4", "c6d4", "d2d3", "e8a4", "c1g5", "a4c2", "d1e1", "f8b4"]
+                    testNot = ['e2e3', 'd7d6', 'a2a3', 'b8a6', 'f2f3', 'a6c5', 'h2h3', 'b7b5', 'd1e2', 'a7a6', 'd2d3',
+                               'g8h6', 'c1d2', 'a8a7', 'g2g4', 'c5e4', 'g4g5', 'e4c3', 'e2f2', 'e7e5', 'f2g3', 'd8d7',
+                               'g3h4', 'e8e7', 'f1g2', 'e7e8', 'e3e4', 'g7g6', 'e1f2', 'd7e7', 'g2f1', 'e7e6', 'f2b6',
+                               'h8g8', 'd2e3', 'e8c6', 'b1d2', 'c3e2', 'e3c5', 'f7f6', 'a1a2', 'd6c5', 'b6c6', 'e6f7',
+                               'c6f6', 'f7e8', 'f6f5', 'f8g7', 'b2b4', 'c7c6', 'f5e5', 'e8d8', 'c2c3', 'e2c3', 'e5c7',
+                               'd8c7', 'a3a4', 'c8e6', 'a4b5', 'c7b8', 'a2a5', 'e6h3', 'g1e2', 'c3a4', 'b5c6', 'h3d7',
+                               'e2c1', 'h6f7', 'd2c4', 'g7h6', 'a5a4', 'g8h8', 'c4a3', 'd7e8', 'f3f4', 'h8f8', 'g5h6',
+                               'f7h8', 'e4e5', 'a7g7', 'f1e2', 'f8f7', 'e2d1', 'g7g8', 'b4b5', 'a6a5', 'h4g5', 'e8d7',
+                               'h1f1', 'f7f8', 'b5b6', 'f8f4', 'a4b4', 'd7h3', 'b6b7', 'h8f7', 'g5f4', 'g6g5', 'f4f3',
+                               'g8f8', 'b4b2', 'f7h6', 'f3e3', 'h3c8', 'b2d2', 'c8g4', 'f1f2', 'f8h8', 'a3b5', 'h8f8',
+                               'c1b3', 'g4e6', 'f2f7', 'f8h8', 'b3c1', 'h8f8', 'd1c2', 'c5c4', 'c1a2', 'a5a4', 'f7d7',
+                               'f8f4', 'b5d6', 'e6g8', 'd2g2', 'c4d3', 'd7e7', 'f4g4', 'g2d2', 'g8b3', 'd2h2', 'a4a3',
+                               'h2e2', 'g4c4', 'e3d3', 'g5g4', 'c2b1', 'c4c2', 'e7g7', 'c2c3', 'd3c3', 'h6f7', 'd6f5',
+                               'b3a4', 'f5g3', 'f7h8', 'e2c2', 'h7h6', 'g7g5', 'a4c2', 'c3b4', 'c2g6', 'g3e4', 'g4g3',
+                               'e4f6', 'g6c2', 'b4a5', 'c2a4', 'f6d7', 'b8c7', 'd7f6', 'a4b3', 'b1c2', 'b3d5', 'g5g3',
+                               'd5c6', 'a2c3', 'a3a2', 'c2d3', 'c7b8', 'g3g4', 'a2a1', 'a5b4', 'c6d7', 'e5e6', 'a1a4',
+                               'c3a4', 'd7e8', 'd3c2', 'b8b7', 'f6d7', 'b7c7', 'e6e7', 'h6h5', 'b4c5', 'e8g6', 'g4d4',
+                               'g6f5', 'c5c4', 'f5c2', 'd7b8', 'c2a4', 'c4c5', 'h8g6', 'd4a4', 'g6h8', 'a4f4', 'h8f7',
+                               'f4f2', 'f7h8', 'e7e8', 'h8f7', 'b8a6', 'c7b7', 'e8d7', 'b7a6', 'd7d5', 'f7d6', 'f2a2']
                     applyNotations(engine, testNot)
                     main(4, engine)
+                    engine = chs.chessBoard()
                 try:
                     if event.key == p.K_e:
                         notations = setNotations()
                     else:
                         if len(notations) == 0:
                             main(levelAndKey[event.key], engine)
+                            engine = chs.chessBoard()
                         else:
                             applyNotations(engine, notations)
                             notations = []
                             main(levelAndKey[event.key], engine)
-                except KeyError:
-                    pass
+                            engine = chs.chessBoard()
+                except Exception as e:
+                    print(Notations)
+                    print(e)
 
         screen.blit(background, (0, 0))
         p.display.flip()
     return
 
 
+def simulate(engine, notations):
+    """
+        def main will deal user input and update screen
+
+        initialize 400x400 screen size and time
+        """
+    screen = p.display.set_mode((BOARD_HEIGHT, BOARD_WIDTH))
+    time = p.time.Clock()
+    screen.fill(p.Color('white'))
+
+    """ open a new Chess engine from chessBoard && reloading pieces png"""
+    loadImages(IMAGES)
+
+    """ tracking game driver """
+    running = True  # boolean obj. game state end or not
+    count = 0
+
+    while running:
+        for e in p.event.get():
+            if e.type == p.QUIT:  # if pygame is ended running turn false
+                running = False
+            if e.type == p.MOUSEBUTTONDOWN:
+                if len(notations) == count:
+                    running = False
+                    break
+                note = notations[count]
+                count += 1
+                rowStart = Chess.Move.Move.rankToRow[note[1]]
+                colStart = Chess.Move.Move.rankToCol[note[0]]
+                rowEnd = Chess.Move.Move.rankToRow[note[3]]
+                colEnd = Chess.Move.Move.rankToCol[note[2]]
+                move = Chess.Move.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
+                engine.makeMove(move)
+                drawBoard(screen)  # display board
+                drawPieces(engine.board, screen)  # display pieces
+        time.tick(MAX_FPS)
+        p.display.flip()
+
+
+def test(moves):
+    import random
+    game = chs.chessBoard()
+    for i in range(1000):
+        try:
+            validMoves = game.getValidMoves()
+            if len(validMoves) == 0:
+                break
+            move = random.choice(validMoves)
+            moves.append(move.getChessNotation())
+            game.makeMove(move)
+        except Exception as e:
+            print(e)
+
+
 if __name__ == "__main__":
     settings()
+
+    # errors = []
+    # for i in range(100):
+    #     moves = []
+    #     try:
+    #         test(moves)
+    #     except Exception as e:
+    #         print(e)
+    #         errors.append(tuple(moves))
+    #
+    # for error in errors:
+    #     print(error)
+
+    # testNot =
+    # engine = chs.chessBoard()
+    # simulate(engine=engine, notations=testNot)
+    #
+    # validMoves = engine.getValidMoves()
+    # for move in validMoves:
+    #     try:
+    #         engine.makeMove(move)
+    #     except Exception as e:
+    #         print(e)

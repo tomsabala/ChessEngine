@@ -1,0 +1,812 @@
+Index: chess/chessGame.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\"\"\"\nThis class is the main class responsible for running the game, setting the game to start, visualize output\nand receive input from program.\n\"\"\"\nimport numpy as np\nimport pygame as p\nimport chessEngine as chs\n\np.init()  # initialize pygame\n'''\ninitialize board sizes and square size\n'''\nboard_height = board_width = 400\nsquare_size = 400 // 8\nimages = dict()\nMAX_FPS = 15\nsetOpt = 1\n\n\"\"\"\nLoading Images\nevery piece load a related image from chess/Images/*\n\"\"\"\n\n\ndef loadImages(images):\n    pieces = [\"wp\", \"bp\", \"wr\", \"br\", \"wk\", \"bk\", \"wb\", \"bb\", \"wq\", \"bq\", \"wK\", \"bK\"]  # all possible, pieces\n    for i, piece in enumerate(pieces):  # for each piece load his related image\n        images[piece] = p.transform.scale(p.image.load(\"Images/\" + piece + \".png\"),\n                                          (square_size, square_size))\n\n\n\"\"\"\ndef main will deal user input and update screen\n\"\"\"\ndef main(setOpt):\n    \"\"\"\n    initialize 400x400 screen size and time\n    \"\"\"\n    screen = p.display.set_mode((board_height, board_width))\n    time = p.time.Clock()\n    screen.fill(p.Color('white'))\n\n    \"\"\" open a new chess engine from chessBoard && reloading pieces png\"\"\"\n    engine = chs.chessBoard()\n    loadImages(images)\n\n    \"\"\" getting all valid moves \"\"\"\n    validMoves = engine.getValidMoves()\n    moveMade = False\n\n    \"\"\" tracking game driver \"\"\"\n    running = True  # boolean obj. game state end or not\n    square_selected = tuple()  # will save the wanted square to be moved in each play turn\n    curr_move = []  # will save the all play move, from square.... to square\n    while running:\n        for e in p.event.get():\n            if e.type == p.QUIT:  # if pygame is ended running turn false\n                running = False\n            elif e.type == p.MOUSEBUTTONDOWN:  # clicking on mouse event\n                col, row = p.mouse.get_pos()  # saving the mouse row and col\n                row = row // square_size  # resizing it to fit screen\n                col = col // square_size\n                if square_selected == (row, col):  # if clicked the same square\n                    square_selected = tuple()\n                    curr_move = []\n                else:\n                    if setOpt == 1:\n                        move = np.random.choice(validMoves)\n                        print(move.getChessNotation())\n                        engine.makeMove(move)\n                        moveMade = True\n                        square_selected = tuple()\n                        curr_move = []\n                    else:\n                        square_selected = (row, col)  # saving mouse click sata\n                        curr_move.append(square_selected)\n                        if len(curr_move) == 1 and engine.board[row][col] == \"---\":\n                            square_selected = tuple()\n                            curr_move = []\n                        elif len(curr_move) == 2:  # if it's the 2-nd move\n                            move = chs.Move(curr_move[0], curr_move[1], engine.board)\n                            if move in validMoves:\n                                print(move.getChessNotation())\n                                engine.makeMove(move)\n                                moveMade = True\n                            square_selected = tuple()\n                            curr_move = []\n            elif e.type == p.KEYDOWN:\n                if e.key == p.K_z:\n                    engine.undoMove()\n                    moveMade = True\n                    square_selected = tuple()\n                    curr_move = []\n            if moveMade:\n                moveMade = False\n                validMoves = engine.getValidMoves()\n                square_selected = tuple()\n                curr_move = []\n                if len(validMoves) == 0:\n                    if engine.checkMate():\n                        running = False\n                        print(\"End Game\")\n        drawGameState(engine.board, screen, square_selected, validMoves)\n        time.tick(MAX_FPS)\n        p.display.flip()\n\ndef highloghtSquares(board, screen, piece, validMoves):\n    if piece != ():\n        for move in validMoves:\n            if move.selectedPiece == board[piece[0]][piece[1]]:\n                s = p.Surface((square_size, square_size))\n                s.set_alpha(100)\n                screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))\n                s.fill(p.Color(\"yellow1\"))\n                screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))\n\ndef drawGameState(board, screen, piece, validMoves):\n    drawBoard(screen)\n    highloghtSquares(board, screen, piece, validMoves)\n    drawPieces(board, screen)\n\n\ndef drawBoard(screen):\n    colors = [p.Color(\"lightsteelblue\"), p.Color(\"cornflowerblue\")]\n    for i in range(8):\n        for j in range(8):\n            color = colors[((i + j) % 2)]\n            p.draw.rect(screen, color, p.Rect(j * square_size, i * square_size, square_size, square_size))\n\n\ndef drawPieces(board, screen):\n    for i in range(8):\n        for j in range(8):\n            piece = board[i][j][:2]\n            if piece != \"--\":\n                screen.blit(images[piece], p.Rect(j * square_size, i * square_size, square_size, square_size))\n\n\ndef settings():\n    screen = p.display.set_mode((500, 500))\n    p.display.set_caption('Chess Game')\n\n    # Fill background\n    background = p.Surface(screen.get_size())\n    background = background.convert()\n    background.fill(p.Color(\"lightsteelblue\"))\n\n    # Display some text\n    font = p.font.Font(None, 36)\n    textHead = font.render(\"Game Settings:\", True, p.Color(\"cornflowerblue\"))\n    textpos = textHead.get_rect()\n    textpos.centerx = background.get_rect().centerx\n\n    text002 = font.render(\"Choose Difficulty: \", True, p.Color(\"cornflowerblue\"))\n    text002pos = text002.get_rect()\n    text002pos.x = 20\n    text002pos.y = 80\n\n    text003 = font.render(\"Good Luck!\", True, p.Color(\"cornflowerblue\"))\n    text003pos = text003.get_rect()\n    text003pos.midbottom = background.get_rect().midbottom\n\n    fontopt = p.font.Font(None, 26)\n    opt1 = fontopt.render(\"Click -1- for a random component (default)\", True, p.Color(\"cornflowerblue\"))\n    opt1pos = opt1.get_rect()\n    opt1pos.x = 50\n    opt1pos.y = 130\n\n    opt2 = fontopt.render(\"Click -2- for a level 1 component\", True, p.Color(\"cornflowerblue\"))\n    opt2pos = opt2.get_rect()\n    opt2pos.x = 50\n    opt2pos.y = 160\n\n    opt3 = fontopt.render(\"Click -3- for a level 2 component\", True, p.Color(\"cornflowerblue\"))\n    opt3pos = opt3.get_rect()\n    opt3pos.x = 50\n    opt3pos.y = 190\n\n    opt4 = fontopt.render(\"Click -4- for a level 3 component\", True, p.Color(\"cornflowerblue\"))\n    opt4pos = opt4.get_rect()\n    opt4pos.x = 50\n    opt4pos.y = 220\n\n    background.blit(text003, text003pos)\n    background.blit(text002, text002pos)\n    background.blit(textHead, textpos)\n    background.blit(opt1, opt1pos)\n    background.blit(opt2, opt2pos)\n    background.blit(opt3, opt3pos)\n    background.blit(opt4, opt4pos)\n\n    # Blit everything to the screen\n    screen.blit(background, (0, 0))\n    p.display.flip()\n\n    # Event loop\n    while True:\n        for event in p.event.get():\n            if event.type == p.QUIT:\n                return\n            if event.type == p.KEYDOWN:\n                if event.key == p.K_1:\n                    main(1)\n                if event.key == p.K_2:\n                    main(2)\n                if event.key == p.K_3:\n                    main(3)\n                if event.key == p.K_4:\n                    main(4)\n\n        screen.blit(background, (0, 0))\n        p.display.flip()\n    return\n\n\nif __name__ == \"__main__\":\n    settings()\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/chess/chessGame.py b/chess/chessGame.py
+--- a/chess/chessGame.py	(revision 3c68e0239afad8bfc5afa3b320c8a46f1c215319)
++++ b/chess/chessGame.py	(date 1640008775736)
+@@ -5,6 +5,7 @@
+ import numpy as np
+ import pygame as p
+ import chessEngine as chs
++import Computation as cmp
+ 
+ p.init()  # initialize pygame
+ '''
+@@ -52,6 +53,7 @@
+     running = True  # boolean obj. game state end or not
+     square_selected = tuple()  # will save the wanted square to be moved in each play turn
+     curr_move = []  # will save the all play move, from square.... to square
++    AICaller = cmp.Computation(setOpt-1)
+     while running:
+         for e in p.event.get():
+             if e.type == p.QUIT:  # if pygame is ended running turn false
+@@ -64,8 +66,8 @@
+                     square_selected = tuple()
+                     curr_move = []
+                 else:
+-                    if setOpt == 1:
+-                        move = np.random.choice(validMoves)
++                    if not engine.whiteTurn and setOpt != 0:
++                        move = AICaller.moveCompute(engine, validMoves)
+                         print(move.getChessNotation())
+                         engine.makeMove(move)
+                         moveMade = True
+@@ -97,14 +99,16 @@
+                 square_selected = tuple()
+                 curr_move = []
+                 if len(validMoves) == 0:
+-                    if engine.checkMate():
+-                        running = False
+-                        print("End Game")
++                    status = chs.EndGame(engine)
++                    status = status.endGame()
++                    running = False
++                    print(status.value)
+         drawGameState(engine.board, screen, square_selected, validMoves)
+         time.tick(MAX_FPS)
+         p.display.flip()
+ 
+-def highloghtSquares(board, screen, piece, validMoves):
++
++def highlightSquares(board, screen, piece, validMoves):
+     if piece != ():
+         for move in validMoves:
+             if move.selectedPiece == board[piece[0]][piece[1]]:
+@@ -114,9 +118,10 @@
+                 s.fill(p.Color("yellow1"))
+                 screen.blit(s, (move.colEnd * square_size, move.rowEnd * square_size))
+ 
++
+ def drawGameState(board, screen, piece, validMoves):
+     drawBoard(screen)
+-    highloghtSquares(board, screen, piece, validMoves)
++    highlightSquares(board, screen, piece, validMoves)
+     drawPieces(board, screen)
+ 
+ 
+@@ -207,6 +212,10 @@
+                     main(3)
+                 if event.key == p.K_4:
+                     main(4)
++                if event.key == p.K_5:
++                    main(5)
++                if event.key == p.K_0:
++                    main(0)
+ 
+         screen.blit(background, (0, 0))
+         p.display.flip()
+Index: chess/chessEngine.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\"\"\"\nthis class responsible for\ngenerate moves\nboard evaluation\nminimax\nand alpha beta pruning\n\"\"\"\nimport numpy as np\nfrom enum import Enum\n\n\nclass EndGame:\n    \"\"\"\n    class responsible for determining the end game result\n    it is nly been used if a certain player has no further moves.\n    and return's Enum values only.\n    \"\"\"\n    def __init__(self, engine):\n        self.engine = engine\n\n    class end(Enum):\n        WHITE = \"End game, White loose\"\n        BLACK = \"End game, Black loose\"\n        DRAW = \"End game, It's a draw\"\n\n    def endGame(self):\n        \"\"\"\n        functions will be called only when player has no moves available\n        and will check if king is on threat\n        :return: boolean value true iff check-mate\n        \"\"\"\n        rul = Rules()\n        if self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.whitePieces[\"wK\"], self.engine.whiteTurn):\n            return self.end.WHITE\n        elif not self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.blackPieces[\"bK\"], False):\n            return self.end.BLACK\n        return self.end.DRAW\n\n\nclass chessBoard:\n    def __init__(self):\n        \"\"\"\n        presenting board as 8X8 np array,\n        blank spot - \"--\",\n        white piece - \"w_\", black piece - \"b_\",\n        Rook, Knight, Bishop etc. - \"_r\", \"_k\", \"_b\" and so on.\n        \"\"\"\n        self.board = np.array([[\"br1\", \"bk1\", \"bb1\", \"bK\", \"bq\", \"bb2\", \"bk2\", \"br2\"],\n                               [\"bp1\", \"bp2\", \"bp3\", \"bp4\", \"bp5\", \"bp6\", \"bp7\", \"bp8\"],\n                               [\"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\"],\n                               [\"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\"],\n                               [\"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\"],\n                               [\"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\", \"---\"],\n                               [\"wp1\", \"wp2\", \"wp3\", \"wp4\", \"wp5\", \"wp6\", \"wp7\", \"wp8\"],\n                               [\"wr1\", \"wk1\", \"wb1\", \"wK\", \"wq\", \"wb2\", \"wk2\", \"wr2\"]])\n        # black and white pieces' dictionary for positions etc. uses to eval game state\n        self.blackPieces = {\"br1\": (0, 0), \"bk1\": (0, 1), \"bb1\": (0, 2), \"bK\": (0, 3), \"bq\": (0, 4), \"bb2\": (0, 5),\n                            \"bk2\": (0, 6), \"br2\": (0, 7), \"bp1\": (1, 0), \"bp2\": (1, 1), \"bp3\": (1, 2), \"bp4\": (1, 3),\n                            \"bp5\": (1, 4), \"bp6\": (1, 5), \"bp7\": (1, 6), \"bp8\": (1, 7)}\n        self.whitePieces = {\"wr1\": (7, 0), \"wk1\": (7, 1), \"wb1\": (7, 2), \"wK\": (7, 3), \"wq\": (7, 4), \"wb2\": (7, 5),\n                            \"wk2\": (7, 6), \"wr2\": (7, 7), \"wp1\": (6, 0), \"wp2\": (6, 1), \"wp3\": (6, 2), \"wp4\": (6, 3),\n                            \"wp5\": (6, 4), \"wp6\": (6, 5), \"wp7\": (6, 6), \"wp8\": (6, 7)}\n        # castle status dictionary-log\n        self.Castle = {\"bK\": True, \"br1\": True, \"br2\": True, \"wK\": True, \"wr1\": True, \"wr2\": True}\n        self.dictCastleLog = {}\n        # game turn-log\n        self.whiteTurn = True  # a boolean obj. for whose turn is it\n        self.moveLog = np.array([])  # an array of all moves\n\n    def makeMove(self, move, check=False):\n        \"\"\"\n        initial move as a play on the board\n        \"\"\"\n        dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}\n        if move.castling:  # for a castling type move\n            # update king side board\n            self.board[move.rowEnd][move.colEnd] = move.selectedPiece\n            self.board[move.rowStart][move.colStart] = \"---\"\n            # update king piece in dictionary\n            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd\n            if move.colEnd < move.colStart:\n                # update rook side board\n                self.board[move.rowEnd][move.colEnd + 1] = move.capturedPiece\n                self.board[move.rowStart][0] = \"---\"\n                # update rook piece in dictionary\n                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd + 1\n            else:\n                # update rook side board\n                self.board[move.rowEnd][move.colEnd - 1] = move.capturedPiece\n                self.board[move.rowStart][7] = \"---\"\n                # update rook piece in dictionary\n                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd - 1\n            if not check:\n                self.dictCastleLog[move.moveID] = self.Castle.copy()\n                self.Castle[move.capturedPiece] = False\n                self.Castle[move.selectedPiece] = False\n        elif move.enPassant:  # for enPassant type move\n            # updating board state\n            self.board[move.rowEnd][move.colEnd] = move.selectedPiece\n            self.board[move.rowStart][move.colStart] = \"---\"\n            self.board[move.rowStart][move.colEnd] = \"---\"\n            # updating white and black pieces dictionary\n            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd\n            del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]\n\n        elif move.promotion:  # for promotion type move\n            # delete selected piece from dictionary\n            del dictTurnUpdates[self.whiteTurn][move.selectedPiece]\n            # update board\n            move.selectedPiece = move.selectedPiece[0] + \"qp\" + move.selectedPiece[-1]\n            self.board[move.rowStart][move.colStart] = \"---\"\n            self.board[move.rowEnd][move.colEnd] = move.selectedPiece\n            # update dictionary\n            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd\n\n        else:  # for a regular type move\n            # update board\n            self.board[move.rowStart][move.colStart] = \"---\"\n            self.board[move.rowEnd][move.colEnd] = move.selectedPiece\n            # update piece dictionary\n            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd\n            if move.capturedPiece in dictTurnUpdates[not self.whiteTurn].keys():\n                del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]\n            if not check and move.capturedPiece in self.Castle:\n                if self.Castle[move.capturedPiece]:\n                    self.dictCastleLog[move.moveID] = self.Castle.copy()\n                    self.Castle[move.capturedPiece] = False\n            if not check and move.selectedPiece in self.Castle:\n                if self.Castle[move.selectedPiece]:\n                    self.dictCastleLog[move.moveID] = self.Castle.copy()\n                    self.Castle[move.selectedPiece] = False\n        self.moveLog = np.append(self.moveLog, move)  # appending the move to memory\n        self.whiteTurn = not self.whiteTurn  # switching turns\n\n    def undoMove(self, check=False):\n        \"\"\"\n        resetting board to last move\n        \"\"\"\n        if len(self.moveLog) > 0:  # there is a move to undo\n            dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}\n            move = self.moveLog[-1]  # last move in the array\n            if move.castling:  # castling type move\n                # update king side board\n                self.board[move.rowStart][move.colStart] = move.selectedPiece\n                self.board[move.rowEnd][move.colEnd] = \"---\"\n                # update kine piece in dictionary\n                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart\n                if move.colEnd < move.colStart:\n                    # update rook side board\n                    self.board[move.rowStart][0] = move.capturedPiece\n                    self.board[move.rowEnd][move.colEnd + 1] = \"---\"\n                    # update rook piece in dictionary\n                    dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 0\n                else:\n                    # update rook side board\n                    self.board[move.rowStart][7] = move.capturedPiece\n                    self.board[move.rowEnd][move.colEnd - 1] = \"---\"\n                    # update rook piece in dictionary\n                    dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 7\n                if not check:\n                    self.Castle = self.dictCastleLog[move.moveID]\n                    del self.dictCastleLog[move.moveID]\n\n            elif move.enPassant:  # for a enPassant type move\n                # updating board state\n                self.board[move.rowEnd][move.colEnd] = \"---\"\n                self.board[move.rowStart][move.colEnd] = move.capturedPiece\n                self.board[move.rowStart][move.colStart] = move.selectedPiece\n                # updating white and black pieces\n                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart\n                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colStart\n\n            elif move.promotion:  # for a promotion type move\n                # delete promoted piece from dictionary\n                del dictTurnUpdates[not self.whiteTurn][move.selectedPiece]\n                # update board\n                move.selectedPiece = move.selectedPiece[0] + \"p\" + move.selectedPiece[-1]\n                self.board[move.rowStart][move.colStart] = move.selectedPiece\n                self.board[move.rowEnd][move.colEnd] = \"---\"\n                # update dictionary\n                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart\n\n            else:  # for a regular type move\n                # updating board\n                self.board[move.rowEnd][move.colEnd] = move.capturedPiece\n                self.board[move.rowStart][move.colStart] = move.selectedPiece\n                # updating piece in dictionary\n                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart\n                if move.capturedPiece != \"---\":\n                    dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd\n                if not check and move.moveID in self.dictCastleLog:\n                    self.Castle = self.dictCastleLog[move.moveID]\n                    del self.dictCastleLog[move.moveID]\n\n            # updating settings\n            self.whiteTurn = not self.whiteTurn\n            self.moveLog = np.delete(self.moveLog, len(self.moveLog) - 1)\n\n    def getValidMoves(self):\n        \"\"\"\n        computing all valid games on board\n        :return: an array of all possible valid move on board\n        \"\"\"\n        whitePiecesToFunc = {\"wp\": self.legalPawnMoves, \"wr\": self.legalRookMoves, \"wk\": self.legalKnightMoves,\n                             \"wb\": self.legalBishopMoves, \"wq\": self.legalQueenMoves, \"wK\": self.legalKingMoves}\n        blackPiecesToFunc = {\"bp\": self.legalPawnMoves, \"br\": self.legalRookMoves, \"bk\": self.legalKnightMoves,\n                             \"bb\": self.legalBishopMoves, \"bq\": self.legalQueenMoves, \"bK\": self.legalKingMoves}\n        validMoves = np.array([])  # an empty array\n        rul = Rules()  # an object for re-checking if a move is valid etc. king is on check\n        if self.whiteTurn:  # computing all white pieces moves\n            for piece, pos in self.whitePieces.items():  # for every piece from whites\n                if piece[:2] == \"wp\":  # if piece is a pawn we want to send the move-log as another input\n                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos, True, self.moveLog)))\n                else:\n                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos)))\n            # validation check\n            for move in validMoves:\n                self.makeMove(move, True)  # apply move\n                if rul.isCheck(self.board, self.whitePieces[\"wK\"], True):  # check for validation\n                    validMoves = np.delete(validMoves, np.where(validMoves == move))  # is not valid, delete\n                self.undoMove(True)  # undo move\n        else:  # same as the above, this time for a black piece move\n            for piece, pos in self.blackPieces.items():\n                if piece[:2] == \"bp\":\n                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False, self.moveLog)))\n                else:\n                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False)))\n            for move in validMoves:\n                self.makeMove(move, True)\n                if rul.isCheck(self.board, self.blackPieces[\"bK\"], False):\n                    validMoves = np.delete(validMoves, np.where(validMoves == move))\n                self.undoMove(True)\n        return validMoves\n\n    def legalPawnMoves(self, piece, white=True, moveLog=None):\n        \"\"\"\n        func. computes all valid moves of a certain pawn\n        :param moveLog: array of all last moves\n        :param piece: pawn position tuple on board\n        :param white: is boolean type for a white's turn or black\n        :return: validMoves after insertion of all valid moves for piece pawn\n        \"\"\"\n        validMoves = np.array([])\n        row, col = piece[0], piece[1]  # saving pawn position\n        if white:  # white's position\n            if row - 1 >= 0:  # if it can move forward\n                if self.board[row - 1][col] == \"---\":  # position one ahead is empty\n                    newMove = Move((row, col), (row - 1, col), self.board)  # create move\n                    validMoves = np.append(validMoves, np.array([newMove]))  # insert move\n                    # pawn at initial position and two ahead is empty\n                    if row == 6 and self.board[row - 2][col] == \"---\":\n                        newMove = Move((row, col), (row - 2, col), self.board)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n                if 0 <= col - 1 and self.board[row - 1][col - 1][0] == \"b\":  # diagonal from left is with a black piece\n                    newMove = Move((row, col), (row - 1, col - 1), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n                if col + 1 <= 7 and self.board[row - 1][col + 1][0] == \"b\":  # diagonal from right is with a black piece\n                    newMove = Move((row, col), (row - 1, col + 1), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n                if row == 3:\n                    # all 6 next lines refer to en Passant move\n                    lastMove = moveLog[-1]\n                    opt1 = 1 * (col + 1) + 10 * row + 100 * (col + 1) + 1000 * (row - 2)\n                    opt2 = 1 * (col - 1) + 10 * row + 100 * (col - 1) + 1000 * (row - 2)\n                    if lastMove.selectedPiece[:2] == \"bp\" and lastMove.moveID == opt1 and col + 1 <= 7:\n                        newMove = Move((row, col), (row - 1, col + 1), self.board, True)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n                    if lastMove.selectedPiece[:2] == \"bp\" and lastMove.moveID == opt2 and col - 1 >= 0:\n                        newMove = Move((row, col), (row - 1, col - 1), self.board, True)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n\n        else:  # it is a black move turn\n            if row + 1 <= 7:  # can move forward\n                if self.board[row + 1][col] == \"---\":  # on ahead is empty\n                    newMove = Move((row, col), (row + 1, col), self.board)  # create move\n                    validMoves = np.append(validMoves, np.array([newMove]))  # insert move\n                    if row == 1 and self.board[row + 2][col] == \"---\":  # pawn os on initial position two ahead is empty\n                        newMove = Move((row, col), (row + 2, col), self.board)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n                if 0 <= col - 1 and self.board[row + 1][col - 1][0] == \"w\":  # diagonal from right is with a white piece\n                    newMove = Move((row, col), (row + 1, col - 1), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n                if col + 1 <= 7 and self.board[row + 1][col + 1][0] == \"w\":  # diagonal from left is with a white piece\n                    newMove = Move((row, col), (row + 1, col + 1), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n                if row == 4:\n                    # all 6 next line refer to en Passant move\n                    lastMove = moveLog[-1]\n                    opt1 = 1 * (col + 1) + 10 * row + 100 * (col + 1) + 1000 * (row + 2)\n                    opt2 = 1 * (col - 1) + 10 * row + 100 * (col - 1) + 1000 * (row + 2)\n                    if lastMove.selectedPiece[:2] == \"wp\" and lastMove.moveID == opt1 and col + 1 <= 7:\n                        newMove = Move((row, col), (row + 1, col + 1), self.board, True)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n                    if lastMove.selectedPiece[:2] == \"wp\" and lastMove.moveID == opt2 and col - 1 >= 0:\n                        newMove = Move((row, col), (row + 1, col - 1), self.board, True)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n        return validMoves\n\n    def legalRookMoves(self, piece, white=True):\n        \"\"\"\n        computing all legal moves for a rook piece in the board\n        :param piece: position tuple\n        :param white: boolean type, true iff it is a white move turn\n        :return: validMoves after insertions\n        \"\"\"\n        validMoves = np.array([])\n        row, col = piece[0], piece[1]  # saving position\n        dirDict = {0: (1, 0), 1: (0, 1), 2: (-1, 0), 3: (0, -1)}  # dictionary of all possible directions for a rook\n        # (1, 0) = up, (-1, 0) = down, (0, 1) = right, (0, -1) = left\n        for i in range(4):  # for every direction do...\n            r, c = dirDict[i]  # picking dir\n            ind = 1\n            while 0 <= row + r * ind <= 7 and 0 <= col + c * ind <= 7:  # if position ahead is inside board\n                curPiece = self.board[row + r * ind][col + c * ind]  # picking piece in that position\n                if curPiece == \"---\":  # if it is un captured\n                    # create move and insert it\n                    newMove = Move((row, col), (row + r * ind, col + c * ind), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n                else:  # is captured by some piece\n                    # it is a white turn and the currPiece is white, or the same for black piece\n                    if (white and curPiece[0] == \"b\") or (not white and curPiece[0] == \"w\"):\n                        newMove = Move((row, col), (row + r * ind, col + c * ind), self.board)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n                    break\n                ind += 1\n        return validMoves\n\n    def legalKnightMoves(self, piece, white=True):\n        \"\"\"\n        computing all legal moves for a knight piece in the board\n        :param piece: position tuple\n        :param white: boolean type, true iff it is a white move turn\n        :return: validMoves after insertions\n        \"\"\"\n        validMoves = np.array([])\n        row, col = piece[0], piece[1]  # saving position\n        # all ahead steps for a knight\n        knightMoves = {1: (1, 2), 2: (2, 1), 3: (1, -2), 4: (2, -1), 5: (-1, -2), 6: (-2, -1), 7: (-1, 2), 8: (-2, 1)}\n        for i in range(1, 9):  # iterate for every step in dictionary\n            r, c = knightMoves[i]  # saving steps\n            if 0 <= row + r <= 7 and 0 <= col + c <= 7:  # if ahead position is inside board\n                curPiece = self.board[row + r][col + c]  # picking piece in that position\n                # checking for a possible next position for a knight\n                if (white and curPiece[0] != \"w\") or (not white and curPiece[0] != \"b\"):\n                    newMove = Move((row, col), (row + r, col + c), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n        return validMoves\n\n    def legalBishopMoves(self, piece, white=True):\n        \"\"\"\n        computing all legal moves for a bishop piece in the board\n        :param piece: position tuple\n        :param white: boolean type, true iff it is a white move turn\n        :return: validMoves after insertions\n        \"\"\"\n        validMoves = np.array([])\n        row, col = piece[0], piece[1]\n        dirDict = {0: (1, 1), 1: (1, -1), 2: (-1, 1), 3: (-1, -1)}\n        for i in dirDict.keys():\n            r, c = dirDict[i]\n            ind = 1\n            while 0 <= row + r * ind <= 7 and 0 <= col + c * ind <= 7:\n                currPos = self.board[row + r * ind][col + c * ind]\n                if currPos == \"---\":\n                    newMove = Move((row, col), (row + r * ind, col + c * ind), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n                else:\n                    if (white and currPos[0] == \"b\") or (not white and currPos[0] == \"w\"):\n                        newMove = Move((row, col), (row + r * ind, col + c * ind), self.board)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n                    break\n                ind += 1\n        return validMoves\n\n    def legalQueenMoves(self, piece, white=True):\n        \"\"\"\n        computing all legal moves for a queen piece in the board\n        :param piece: position tuple\n        :param white: boolean type, true iff it is a white move turn\n        :return: validMoves after insertions\n        \"\"\"\n        validMoves = np.concatenate((self.legalBishopMoves(piece, white),\n                                     self.legalRookMoves(piece, white)))\n        return validMoves\n\n    def legalKingMoves(self, piece, white=True):\n        \"\"\"\n        computing all legal moves for a rook piece in the board\n        :param piece: position tuple\n        :param white: boolean type, true iff it is a white move turn\n        :return: validMoves after insertions\n        \"\"\"\n        validMoves = np.array([])\n        row, col = piece[0], piece[1]\n        kingMoves = {0: (1, 0), 1: (1, 1), 2: (0, 1), 3: (-1, 1), 4: (-1, 0), 5: (-1, -1), 6: (0, -1), 7: (1, -1)}\n        for i in range(8):\n            r, c = kingMoves[i]\n            if 0 <= row + r <= 7 and 0 <= col + c <= 7:\n                currPos = self.board[row + r][col + c]\n                if (white and currPos[0] != \"w\") or (not white and currPos[0] != \"b\"):\n                    newMove = Move((row, col), (row + r, col + c), self.board)\n                    validMoves = np.append(validMoves, np.array([newMove]))\n        # castling\n        if self.Castle[self.board[row][col]]:\n            dictBooleanColors = {True: \"w\", False: \"b\"}\n            for i in range(1, 3):\n                rook = dictBooleanColors[white] + \"r\" + str(i)\n                if self.Castle[rook]:\n                    if self.isLegalCastle(rook, white):\n                        if i == 1:\n                            newMove = Move((row, col), (row, col - 2), self.board, False, True)\n                        else:\n                            newMove = Move((row, col), (row, col + 2), self.board, False, True)\n                        validMoves = np.append(validMoves, np.array([newMove]))\n        return validMoves\n\n    def isLegalCastle(self, rook, white=True):\n        rul = Rules()\n        if (white and rul.isCheck(self.board, self.whitePieces[\"wK\"], True)) or \\\n                (not white and rul.isCheck(self.board, self.blackPieces[\"bK\"], False)):\n            return False\n        for i in range(min(3, (int(rook[2]) // 2) * 7) + 1, max(3, (int(rook[2]) // 2) * 7)):\n            if self.board[int(white) * 7][i] != \"---\":\n                return False\n        return True\n\n\nclass Move:\n    \"\"\"\n    this class responsible for evaluating move and generating move annotations and valid moves\n    \"\"\"\n    # form dictionaries: from annotations to position and the opposite way\n    rankToRow = {\"1\": 7, \"2\": 6, \"3\": 5, \"4\": 4, \"5\": 3, \"6\": 2, \"7\": 1, \"8\": 0}\n    rowToRank = {v: k for k, v in rankToRow.items()}\n    rankToCol = {\"a\": 0, \"b\": 1, \"c\": 2, \"d\": 3, \"e\": 4, \"f\": 5, \"g\": 6, \"h\": 7}\n    colToRank = {v: k for k, v in rankToCol.items()}\n\n    # initial a new move\n    def __init__(self, startLoc, endLoc, board, enPassant=False, castling=False):\n        # where from\n        self.rowStart = startLoc[0]\n        self.colStart = startLoc[1]\n        # where to\n        self.rowEnd = endLoc[0]\n        self.colEnd = endLoc[1]\n        # if move is en Passant type\n        if self.isEnPassant(board) or enPassant:\n            self.enPassant = True\n        else:\n            self.enPassant = False\n        # if move is a castle move type\n        if self.isCastling(board) or castling:\n            self.castling = True\n        else:\n            self.castling = False\n        # if move is a promotion move type\n        if self.isPromotion(self.rowEnd, self.colStart, self.colEnd, board[self.rowStart][self.colStart]):\n            self.promotion = True\n        else:\n            self.promotion = False\n        # pieces involved\n        self.selectedPiece = board[self.rowStart][self.colStart]\n        if self.enPassant or self.promotion:\n            self.capturedPiece = board[self.rowStart][self.colEnd]\n        elif self.castling:\n            if self.colStart < self.colEnd:\n                self.capturedPiece = board[self.rowStart][7]\n            else:\n                self.capturedPiece = board[self.rowStart][0]\n        elif self.promotion:\n            pass\n        else:\n            self.capturedPiece = board[self.rowEnd][self.colEnd]\n        self.moveID = 1000000 * self.promotion + 100000 * self.castling + 10000 * self.enPassant + \\\n                      1000 * self.rowStart + 100 * self.colStart + 10 * self.rowEnd + 1 * self.colEnd\n\n    def isEnPassant(self, board):\n        if self.rowStart == 3:\n            if board[self.rowStart][self.colStart][:2] == \"wp\":\n                if board[self.rowEnd][self.colEnd] == \"---\":\n                    if board[self.rowStart][self.colEnd][:2] == \"bp\":\n                        return True\n        elif self.rowStart == 4:\n            if board[self.rowStart][self.colStart][:2] == \"bp\":\n                if board[self.rowEnd][self.colEnd] == \"---\":\n                    if board[self.rowStart][self.colEnd][:2] == \"wp\":\n                        return True\n        return False\n\n    def isCastling(self, board):\n        if board[self.rowStart][self.colStart][1] == \"K\":\n            if self.colStart == 3 and np.abs(self.colEnd - self.colStart) == 2:\n                return True\n        return False\n\n    @staticmethod\n    def isPromotion(rowEnd, colStart, colEnd, piece):\n        if piece[:2] == \"wp\" and rowEnd == 0 and colStart == colEnd:\n            return True\n        elif piece[:2] == \"bp\" and rowEnd == 7 and colStart == colEnd:\n            return True\n        return False\n\n    def __eq__(self, other):\n        \"\"\"\n        checking for equivalence with another move\n        :param other: a move type object\n        :return:\n        \"\"\"\n        if isinstance(other, Move):\n            return self.moveID == other.moveID  # checking if both ids are equal\n\n    def getChessNotation(self):  # saving the move notation\n        return self.getRankStr(self.rowStart, self.colStart) + self.getRankStr(self.rowEnd, self.colEnd)\n\n    def getRankStr(self, row, col):\n        return self.colToRank[col] + self.rowToRank[row]\n\n\nclass Rules:\n    \"\"\"\n    this class response for checking if a move is valid,\n    etc. the king is on check and so on\n    \"\"\"\n    \"\"\"\n        checking whether the king is on threat\n    \"\"\"\n\n    def isCheck(self, board, kingPos, white=True):\n        return self.isInThreat(board, kingPos, white)\n\n    def isInThreat(self, board, piece, white=True):\n        \"\"\"\n        :param board: current board status\n        :param piece: piece to be checked, a tuple of 2 integers represents the place on the board\n        :param white: a boolean to check whether black is threaten by or white is\n        :return: boolean obj. True iff is on threat\n        \"\"\"\n        # checking if there is a threat on the diagonals\n        posDiagonals = self.diagonals(board, piece, white)\n        # checking if there is a threat on the vertical\n        posVertices = self.vertices(board, piece, white)\n        # checking if there is a threat from a knight\n        posKnightMoves = self.KnightMoves(board, piece, white)\n        return posVertices or posDiagonals or posKnightMoves\n\n    \"\"\"\n    all 9 next functions are checking if when given a certain piece and color, \n    that piece is threaten by the opposite player pieces from diagonal, vertical, horizon or a knight\n    \"\"\"\n\n    @staticmethod\n    def KnightMoves(board, piece, white):\n        \"\"\"\n        functions will check if a piece is being threat from an opposite knight\n        :param board: board game status\n        :param piece: piece to ce checked\n        :param white: is a white piece or not\n        :return: true iff piece is under threat from a knight\n        \"\"\"\n        row, col = piece[0], piece[1]  # saving positions\n        # two sets of white and black knights\n        whiteKnights = {\"wk1\", \"wk2\"}\n        blackKnights = {\"bk1\", \"bk2\"}\n        knightAhead = set()  # set of all pieces ahead from piece pos, moved as like a knight\n        knightTupleInd = {(1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1)}  # all knight moves\n        for tup in knightTupleInd:\n            if (0 <= row + tup[0] <= 7) and (0 <= col + tup[1] <= 7):  # if a move is inside board limits\n                currPos = board[row + tup[0]][col + tup[1]]  # catch piece in that position\n                set.add(knightAhead, currPos)  # insert piece to the set\n        # seeing if there is a match between black knight and moves a head or opposite\n        if white and len(knightAhead.intersection(blackKnights)) > 0:\n            return True\n        elif not white and len(knightAhead.intersection(whiteKnights)) > 0:\n            return True\n        return False\n\n    @staticmethod\n    def vertices(board, piece, white=True):\n        \"\"\"\n        functions will check if a piece is being threat from an opposite queen, rook or a King if can\n        :param board: board game status\n        :param piece: piece to ce checked\n        :param white: is a white piece or not\n        :return: true iff piece is under threat from a queen, rook or a King if can\n        \"\"\"\n        row, col = piece[0], piece[1]  # saving row and col\n        dirDict = {0: (1, 0), 1: (0, -1), 2: (-1, 0), 3: (0, 1)}  # directions dictionary\n        for i in range(4):  # for every direction\n            r, c = dirDict[i]\n            ind = 1  # distance from row and col\n            while 0 <= row + r * ind <= 7 and 0 <= col + c * ind <= 7:  # as long position ahead is in board limits\n                currPos = board[row + r * ind][col + c * ind]  # curr piece in that position\n                if currPos == \"---\":  # if no piece in that position\n                    ind += 1\n                    continue\n                # if piece can threaten on row,col position\n                elif white and currPos[:2] in {\"br\", \"bq\", \"bK\"}:\n                    return True\n                elif not white and currPos[:2] in {\"wr\", \"wq\", \"wK\"}:\n                    return True\n                else:  # piece is not blanked and can't make a threat\n                    break\n        return False\n\n    @staticmethod\n    def diagonals(board, piece, white=True):\n        \"\"\"\n        functions will check if a piece is being threat from an opposite queen, bishop or a King/pawn if can\n        :param board: board game status\n        :param piece: piece to ce checked\n        :param white: is a white piece or not\n        :return: true iff piece is under threat from a queen, bishop or a King/pawn if can\n        \"\"\"\n        row, col = piece[0], piece[1]\n        dirDict = {0: (1, 1), 1: (-1, 1), 2: (-1, -1), 3: (1, -1)}\n        for i in range(4):\n            r, c = dirDict[i]\n            ind = 1\n            while 0 <= row + r * ind <= 7 and 0 <= col + c * ind <= 7:\n                currPos = board[row + r * ind][col + c * ind]\n                if currPos == \"---\":\n                    ind += 1\n                    continue\n                if white and currPos[:2] == \"bp\":\n                    if r < 0 and ind == 1:\n                        return True\n                    ind += 1\n                elif white and currPos[:2] in {\"bb\", \"bq\", \"bK\"}:\n                    return True\n                elif not white and currPos[:2] == \"wp\":\n                    if r > 0 and ind == 1:\n                        return True\n                    ind += 1\n                elif not white and currPos[:2] in {\"wb\", \"wq\", \"wK\"}:\n                    return True\n                else:\n                    break\n        return False\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/chess/chessEngine.py b/chess/chessEngine.py
+--- a/chess/chessEngine.py	(revision 3c68e0239afad8bfc5afa3b320c8a46f1c215319)
++++ b/chess/chessEngine.py	(date 1640382134638)
+@@ -2,9 +2,8 @@
+ this class responsible for
+ generate moves
+ board evaluation
+-minimax
+-and alpha beta pruning
+ """
++
+ import numpy as np
+ from enum import Enum
+ 
+@@ -12,7 +11,7 @@
+ class EndGame:
+     """
+     class responsible for determining the end game result
+-    it is nly been used if a certain player has no further moves.
++    it is only been used if a certain player has no further moves.
+     and return's Enum values only.
+     """
+     def __init__(self, engine):
+@@ -30,9 +29,9 @@
+         :return: boolean value true iff check-mate
+         """
+         rul = Rules()
+-        if self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.whitePieces["wK"], self.engine.whiteTurn):
++        if self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.whiteTurn):
+             return self.end.WHITE
+-        elif not self.engine.whiteTurn and rul.isCheck(self.engine.board, self.engine.blackPieces["bK"], False):
++        elif not self.engine.whiteTurn and rul.isCheck(self.engine.board, not self.engine.whiteTurn):
+             return self.end.BLACK
+         return self.end.DRAW
+ 
+@@ -71,127 +70,171 @@
+         """
+         initial move as a play on the board
+         """
+-        dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
+-        if move.castling:  # for a castling type move
+-            # update king side board
++        self.updateBoard(move)
++        if not check:
++            self.updatePieces(move, self.whiteTurn)
++        self.moveLog = np.append(self.moveLog, move)  # appending the move to memory
++        self.whiteTurn = not self.whiteTurn  # switching turns
++
++    def updateBoard(self, move):
++        """
++        updating board according to the move notation after a move is done
++        :param move: a Move type object
++        :return: None
++        """
++        if move.castling:  # if move is a castling move
++            # updating king location
+             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
+             self.board[move.rowStart][move.colStart] = "---"
+-            # update king piece in dictionary
+-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
+-            if move.colEnd < move.colStart:
+-                # update rook side board
++            # updating rook location
++            if move.colEnd < move.colStart:  # left side castle
+                 self.board[move.rowEnd][move.colEnd + 1] = move.capturedPiece
+                 self.board[move.rowStart][0] = "---"
+-                # update rook piece in dictionary
+-                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd + 1
+-            else:
+-                # update rook side board
++            else:  # right side castle
+                 self.board[move.rowEnd][move.colEnd - 1] = move.capturedPiece
+                 self.board[move.rowStart][7] = "---"
+-                # update rook piece in dictionary
+-                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd - 1
+-            if not check:
+-                self.dictCastleLog[move.moveID] = self.Castle.copy()
+-                self.Castle[move.capturedPiece] = False
+-                self.Castle[move.selectedPiece] = False
+-        elif move.enPassant:  # for enPassant type move
+-            # updating board state
++        elif move.enPassant:  # if move is an en-passant move
++            # updating board
+             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
+             self.board[move.rowStart][move.colStart] = "---"
+             self.board[move.rowStart][move.colEnd] = "---"
+-            # updating white and black pieces dictionary
+-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
+-            del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]
+-
+-        elif move.promotion:  # for promotion type move
+-            # delete selected piece from dictionary
+-            del dictTurnUpdates[self.whiteTurn][move.selectedPiece]
+-            # update board
++        elif move.promotion:  # if move is a promotion move
++            # updating board
+             move.selectedPiece = move.selectedPiece[0] + "qp" + move.selectedPiece[-1]
+             self.board[move.rowStart][move.colStart] = "---"
+             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
+-            # update dictionary
+-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
+-
+-        else:  # for a regular type move
+-            # update board
++        else:  # move is regular
+             self.board[move.rowStart][move.colStart] = "---"
+             self.board[move.rowEnd][move.colEnd] = move.selectedPiece
+-            # update piece dictionary
+-            dictTurnUpdates[self.whiteTurn][move.selectedPiece] = move.rowEnd, move.colEnd
+-            if move.capturedPiece in dictTurnUpdates[not self.whiteTurn].keys():
+-                del dictTurnUpdates[not self.whiteTurn][move.capturedPiece]
+-            if not check and move.capturedPiece in self.Castle:
+-                if self.Castle[move.capturedPiece]:
+-                    self.dictCastleLog[move.moveID] = self.Castle.copy()
+-                    self.Castle[move.capturedPiece] = False
+-            if not check and move.selectedPiece in self.Castle:
+-                if self.Castle[move.selectedPiece]:
+-                    self.dictCastleLog[move.moveID] = self.Castle.copy()
+-                    self.Castle[move.selectedPiece] = False
+-        self.moveLog = np.append(self.moveLog, move)  # appending the move to memory
+-        self.whiteTurn = not self.whiteTurn  # switching turns
++
++    def updatePieces(self, move, White):
++        """
++        updating piece dict. according to move annotation after move is done.
++        :param move: Move type object
++        :param White: boolean type, True iff move refer to a white move.
++        :return: None
++        """
++        pieceDict = {True: self.whitePieces, False: self.blackPieces}  # dictionary for piece coloe
++        if move.castling:  # for a castling move
++            # updating king position
++            pieceDict[White][move.selectedPiece] = move.rowEnd, move.colEnd
++            # updating rook position
++            if move.colEnd < move.rowEnd:
++                pieceDict[White][move.capturedPiece] = move.rowEnd, move.colEnd + 1
++            else:
++                pieceDict[White][move.capturedPiece] = move.rowEnd, move.colEnd - 1
++            # updating castle dictionary of booleans
++            self.dictCastleLog[move.moveID] = self.Castle.copy()
++            self.Castle[move.capturedPiece] = False
++            self.Castle[move.selectedPiece] = False
++        elif move.enPassant:  # for an en-passant move
++            # updating selected piece position
++            pieceDict[White][move.selectedPiece] = move.rowEnd, move.colEnd
++            # removing captured piece from dictionary
++            del pieceDict[not White][move.capturedPiece]
++        elif move.promotion:  # for a promotion move
++            # updating selected piece
++            del pieceDict[White][move.selectedPiece[0] + "p" + move.selectedPiece[-1]]
++            pieceDict[White][move.selectedPiece] = move.rowEnd, move.colEnd
++        else:  # for a regular type move
++            # updating piece position
++            pieceDict[White][move.selectedPiece] = move.rowEnd, move.colEnd
++            if move.capturedPiece in pieceDict[not White].keys():  # captured position is an opponents piece
++                # deleting captured piece from dict.
++                del pieceDict[not White][move.capturedPiece]
++            if move.capturedPiece in self.Castle and self.Castle[move.capturedPiece]:
++                # if captured piece is involve with castle moves
++                # update castle dictionary
++                self.dictCastleLog[move.moveID] = self.Castle.copy()
++                self.Castle[move.capturedPiece] = False
++            if move.selectedPiece in self.Castle and self.Castle[move.selectedPiece]:
++                # if selected piece is involve with castle moves
++                # update castle dictionary
++                self.dictCastleLog[move.moveID] = self.Castle.copy()
++                self.Castle[move.selectedPiece] = False
+ 
+-    def undoMove(self, check=False):
++    def restoreBoard(self, move):
+         """
+-        resetting board to last move
++        updating board according to move annotation after a move is undo
++        :param move: a Move type object
++        :return: None
+         """
+-        if len(self.moveLog) > 0:  # there is a move to undo
+-            dictTurnUpdates = {True: self.whitePieces, False: self.blackPieces}
+-            move = self.moveLog[-1]  # last move in the array
+-            if move.castling:  # castling type move
+-                # update king side board
+-                self.board[move.rowStart][move.colStart] = move.selectedPiece
+-                self.board[move.rowEnd][move.colEnd] = "---"
+-                # update kine piece in dictionary
+-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
+-                if move.colEnd < move.colStart:
+-                    # update rook side board
+-                    self.board[move.rowStart][0] = move.capturedPiece
+-                    self.board[move.rowEnd][move.colEnd + 1] = "---"
+-                    # update rook piece in dictionary
+-                    dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 0
+-                else:
+-                    # update rook side board
+-                    self.board[move.rowStart][7] = move.capturedPiece
+-                    self.board[move.rowEnd][move.colEnd - 1] = "---"
+-                    # update rook piece in dictionary
+-                    dictTurnUpdates[not self.whiteTurn][move.capturedPiece] = move.rowStart, 7
+-                if not check:
+-                    self.Castle = self.dictCastleLog[move.moveID]
+-                    del self.dictCastleLog[move.moveID]
+-
+-            elif move.enPassant:  # for a enPassant type move
+-                # updating board state
+-                self.board[move.rowEnd][move.colEnd] = "---"
+-                self.board[move.rowStart][move.colEnd] = move.capturedPiece
+-                self.board[move.rowStart][move.colStart] = move.selectedPiece
+-                # updating white and black pieces
+-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
+-                dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colStart
+-
+-            elif move.promotion:  # for a promotion type move
+-                # delete promoted piece from dictionary
+-                del dictTurnUpdates[not self.whiteTurn][move.selectedPiece]
+-                # update board
+-                move.selectedPiece = move.selectedPiece[0] + "p" + move.selectedPiece[-1]
+-                self.board[move.rowStart][move.colStart] = move.selectedPiece
+-                self.board[move.rowEnd][move.colEnd] = "---"
+-                # update dictionary
+-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
+-
+-            else:  # for a regular type move
+-                # updating board
+-                self.board[move.rowEnd][move.colEnd] = move.capturedPiece
+-                self.board[move.rowStart][move.colStart] = move.selectedPiece
+-                # updating piece in dictionary
+-                dictTurnUpdates[not self.whiteTurn][move.selectedPiece] = move.rowStart, move.colStart
+-                if move.capturedPiece != "---":
+-                    dictTurnUpdates[self.whiteTurn][move.capturedPiece] = move.rowEnd, move.colEnd
+-                if not check and move.moveID in self.dictCastleLog:
+-                    self.Castle = self.dictCastleLog[move.moveID]
+-                    del self.dictCastleLog[move.moveID]
++        if move.castling:  # for a castle type move
++            # updating king position
++            self.board[move.rowEnd][move.colEnd] = "---"
++            self.board[move.rowStart][move.colStart] = move.selectedPiece
++            # updating rook position
++            if move.colEnd < move.colStart:  # for a left castle
++                self.board[move.rowEnd][move.colEnd + 1] = "---"
++                self.board[move.rowStart][0] = move.capturedPiece
++            else:  # for a right castle
++                self.board[move.rowEnd][move.colEnd - 1] = "---"
++                self.board[move.rowStart][7] = move.capturedPiece
++        elif move.enPassant:  # for an en-passant type move
++            # updating positions
++            self.board[move.rowEnd][move.colEnd] = "---"
++            self.board[move.rowStart][move.colStart] = move.selectedPiece
++            self.board[move.rowStart][move.colEnd] = move.capturedPiece
++        elif move.promotion:  # for a promotion type move
++            # updating positions
++            move.selectedPiece = move.selectedPiece[0] + "p" + move.selectedPiece[-1]
++            self.board[move.rowStart][move.colStart] = move.selectedPiece
++            self.board[move.rowEnd][move.colEnd] = "---"
++        else:  # for a regular type move
++            # updating positions
++            self.board[move.rowStart][move.colStart] = move.selectedPiece
++            self.board[move.rowEnd][move.colEnd] = move.capturedPiece
++
++    def restorePieces(self, move, White):
++        """
++        updating pieces dictionary according to move annotation after a move is undo
++        :param move: Move type object to undo
++        :param White: boolean type. True iff move is a white piece move
++        :return:
++        """
++        pieceDict = {True: self.whitePieces, False: self.blackPieces}  # piece color dictionary
++        if move.castling:  # for a castling move
++            # updating king piece
++            pieceDict[White][move.selectedPiece] = move.rowStart, move.colStart
++            # updating rook piece
++            if move.colEnd < move.rowEnd:  # for a left side castle
++                pieceDict[White][move.capturedPiece] = move.rowEnd, 0
++            else:  # for a right side castle
++                pieceDict[White][move.capturedPiece] = move.rowEnd, 7
++            # updating castle dictionary state
++            self.Castle = self.dictCastleLog[move.moveID]
++            del self.dictCastleLog[move.moveID]
++        elif move.enPassant:  # for an en-passant move
++            # updating pieces
++            pieceDict[White][move.selectedPiece] = move.rowStart, move.colStart
++            pieceDict[not White][move.capturedPiece] = move.rowEnd, move.colStart
++        elif move.promotion:  # for a promotion move
++            # updating pieces
++            del pieceDict[White][move.selectedPiece[0] + "qp" + move.selectedPiece[-1]]
++            pieceDict[White][move.selectedPiece] = move.rowStart, move.colStart
++        else:  # for a regular type move
++            pieceDict[White][move.selectedPiece] = move.rowStart, move.colStart
++            if move.capturedPiece in pieceDict[not White].keys():
++                pieceDict[not White][move.capturedPiece] = move.rowEnd, move.colEnd
++            if move.capturedPiece in self.Castle and self.Castle[move.capturedPiece]:
++                self.dictCastleLog[move.moveID] = self.Castle.copy()
++                self.Castle[move.capturedPiece] = False
++            if move.selectedPiece in self.Castle and self.Castle[move.selectedPiece]:
++                self.dictCastleLog[move.moveID] = self.Castle.copy()
++                self.Castle[move.selectedPiece] = False
++            if move.moveID in self.dictCastleLog:
++                self.Castle = self.dictCastleLog[move.moveID]
++                del self.dictCastleLog[move.moveID]
+ 
++    def undoMove(self, check=False):
++        """
++        resetting board to last move
++        """
++        if len(self.moveLog) > 0:  # there is a move to undo
++            move = self.moveLog[-1]  # last move in the array
++            self.restoreBoard(move)
++            if not check:
++                self.restorePieces(move, not self.whiteTurn)
+             # updating settings
+             self.whiteTurn = not self.whiteTurn
+             self.moveLog = np.delete(self.moveLog, len(self.moveLog) - 1)
+@@ -208,26 +251,34 @@
+         validMoves = np.array([])  # an empty array
+         rul = Rules()  # an object for re-checking if a move is valid etc. king is on check
+         if self.whiteTurn:  # computing all white pieces moves
+-            for piece, pos in self.whitePieces.items():  # for every piece from whites
+-                if piece[:2] == "wp":  # if piece is a pawn we want to send the move-log as another input
+-                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos, True, self.moveLog)))
+-                else:
+-                    validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]](pos)))
++            for r in range(8):
++                for c in range(8):
++                    piece = self.board[r][c]
++                    if piece[0] == "w":
++                        if piece[:2] == "wp":  # if piece is a pawn we want to send the move-log as another input
++                            validMoves = \
++                                np.concatenate((validMoves, whitePiecesToFunc[piece[:2]]((r, c), True, self.moveLog)))
++                        else:
++                            validMoves = np.concatenate((validMoves, whitePiecesToFunc[piece[:2]]((r, c))))
+             # validation check
+             for move in validMoves:
+                 self.makeMove(move, True)  # apply move
+-                if rul.isCheck(self.board, self.whitePieces["wK"], True):  # check for validation
++                if rul.isCheck(self.board, True):  # check for validation
+                     validMoves = np.delete(validMoves, np.where(validMoves == move))  # is not valid, delete
+                 self.undoMove(True)  # undo move
+         else:  # same as the above, this time for a black piece move
+-            for piece, pos in self.blackPieces.items():
+-                if piece[:2] == "bp":
+-                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False, self.moveLog)))
+-                else:
+-                    validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]](pos, False)))
++            for r in range(8):
++                for c in range(8):
++                    piece = self.board[r][c]
++                    if piece[0] == "b":
++                        if piece[:2] == "bp":  # if piece is a pawn we want to send the move-log as another input
++                            validMoves = np.concatenate(
++                                (validMoves, blackPiecesToFunc[piece[:2]]((r, c), False, self.moveLog)))
++                        else:
++                            validMoves = np.concatenate((validMoves, blackPiecesToFunc[piece[:2]]((r, c), False)))
+             for move in validMoves:
+                 self.makeMove(move, True)
+-                if rul.isCheck(self.board, self.blackPieces["bK"], False):
++                if rul.isCheck(self.board, False):
+                     validMoves = np.delete(validMoves, np.where(validMoves == move))
+                 self.undoMove(True)
+         return validMoves
+@@ -416,8 +467,7 @@
+ 
+     def isLegalCastle(self, rook, white=True):
+         rul = Rules()
+-        if (white and rul.isCheck(self.board, self.whitePieces["wK"], True)) or \
+-                (not white and rul.isCheck(self.board, self.blackPieces["bK"], False)):
++        if (white and rul.isCheck(self.board, True)) or (not white and rul.isCheck(self.board, False)):
+             return False
+         for i in range(min(3, (int(rook[2]) // 2) * 7) + 1, max(3, (int(rook[2]) // 2) * 7)):
+             if self.board[int(white) * 7][i] != "---":
+@@ -526,8 +576,16 @@
+         checking whether the king is on threat
+     """
+ 
+-    def isCheck(self, board, kingPos, white=True):
+-        return self.isInThreat(board, kingPos, white)
++    def isCheck(self, board, white=True):
++        pos = self.findKing(board, white)
++        return self.isInThreat(board, pos, white)
++
++    def findKing(self, board, white):
++        boolToColor = {True: "w", False: "b"}
++        for r in range(8):
++            for c in range(8):
++                if board[r][c] == boolToColor[white] + "K":
++                    return r, c
+ 
+     def isInThreat(self, board, piece, white=True):
+         """
+@@ -595,12 +653,19 @@
+                     ind += 1
+                     continue
+                 # if piece can threaten on row,col position
+-                elif white and currPos[:2] in {"br", "bq", "bK"}:
+-                    return True
+-                elif not white and currPos[:2] in {"wr", "wq", "wK"}:
+-                    return True
+-                else:  # piece is not blanked and can't make a threat
+-                    break
++                else:
++                    if white:
++                        if currPos[:2] in {"br", "bq"}:
++                            return True
++                        elif ind == 1 and currPos[:2] == "bK":
++                            return True
++                        break
++                    else:
++                        if currPos[:2] in {"wr", "wq"}:
++                            return True
++                        elif ind == 1 and currPos[:2] == "wK":
++                            return True
++                        break
+         return False
+ 
+     @staticmethod
+@@ -622,18 +687,20 @@
+                 if currPos == "---":
+                     ind += 1
+                     continue
+-                if white and currPos[:2] == "bp":
+-                    if r < 0 and ind == 1:
+-                        return True
+-                    ind += 1
+-                elif white and currPos[:2] in {"bb", "bq", "bK"}:
+-                    return True
+-                elif not white and currPos[:2] == "wp":
+-                    if r > 0 and ind == 1:
+-                        return True
+-                    ind += 1
+-                elif not white and currPos[:2] in {"wb", "wq", "wK"}:
+-                    return True
+-                else:
+-                    break
++                else:
++                    if white:
++                        if currPos[:2] in {"bb", "bq"}:
++                            return True
++                        elif ind == 1:
++                            if currPos[:2] == "bK" or (r < 0 and currPos[:2] == "bp"):
++                                return True
++                        break
++                    else:
++                        if currPos[:2] in {"wb", "wq"}:
++                            return True
++                        elif ind == 1:
++                            if currPos[:2] == "wK" or (r > 0 and currPos[:2] == "wp"):
++                                return True
++                        break
++
+         return False
+Index: chess/scratch.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import pygame as p\n\nimport chess\nimport chessEngine as chs\n\n\ndef main():\n    # Initialise screen\n    p.init()\n    screen = p.display.set_mode((500, 500))\n    p.display.set_caption('Chess Game')\n\n    # Fill background\n    background = p.Surface(screen.get_size())\n    background = background.convert()\n    background.fill(p.Color(\"lightsteelblue\"))\n\n    # Display some text\n    font = p.font.Font(None, 36)\n    textHead = font.render(\"Game Settings:\", True, p.Color(\"cornflowerblue\"))\n    textpos = textHead.get_rect()\n    textpos.centerx = background.get_rect().centerx\n\n    text002 = font.render(\"Choose Difficulty: \", True, p.Color(\"cornflowerblue\"))\n    text002pos = text002.get_rect()\n    text002pos.x = 20\n    text002pos.y = 80\n\n    text003 = font.render(\"Good Luck!\", True, p.Color(\"cornflowerblue\"))\n    text003pos = text003.get_rect()\n    text003pos.midbottom = background.get_rect().midbottom\n\n    fontopt = p.font.Font(None, 26)\n    opt1 = fontopt.render(\"Click -1- for a random component\", True, p.Color(\"cornflowerblue\"))\n    opt1pos = opt1.get_rect()\n    opt1pos.x = 50\n    opt1pos.y = 130\n\n    opt2 = fontopt.render(\"Click -2- for a level 1 component\", True, p.Color(\"cornflowerblue\"))\n    opt2pos = opt2.get_rect()\n    opt2pos.x = 50\n    opt2pos.y = 160\n\n    opt3 = fontopt.render(\"Click -3- for a level 2 component\", True, p.Color(\"cornflowerblue\"))\n    opt3pos = opt3.get_rect()\n    opt3pos.x = 50\n    opt3pos.y = 190\n\n    opt4 = fontopt.render(\"Click -4- for a level 3 component\", True, p.Color(\"cornflowerblue\"))\n    opt4pos = opt4.get_rect()\n    opt4pos.x = 50\n    opt4pos.y = 220\n\n    background.blit(text003, text003pos)\n    background.blit(text002, text002pos)\n    background.blit(textHead, textpos)\n    background.blit(opt1, opt1pos)\n    background.blit(opt2, opt2pos)\n    background.blit(opt3, opt3pos)\n    background.blit(opt4, opt4pos)\n\n    # Blit everything to the screen\n    screen.blit(background, (0, 0))\n    p.display.flip()\n\n    # Event loop\n    while True:\n        for event in p.event.get():\n            if event.type == p.QUIT:\n                return\n\n        screen.blit(background, (0, 0))\n        p.display.flip()\n\n\nif __name__ == '__main__':\n    main()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/chess/scratch.py b/chess/scratch.py
+--- a/chess/scratch.py	(revision 3c68e0239afad8bfc5afa3b320c8a46f1c215319)
++++ b/chess/scratch.py	(date 1639997197200)
+@@ -1,77 +1,14 @@
+-import pygame as p
+-
+-import chess
+-import chessEngine as chs
+-
+-
+-def main():
+-    # Initialise screen
+-    p.init()
+-    screen = p.display.set_mode((500, 500))
+-    p.display.set_caption('Chess Game')
+-
+-    # Fill background
+-    background = p.Surface(screen.get_size())
+-    background = background.convert()
+-    background.fill(p.Color("lightsteelblue"))
+-
+-    # Display some text
+-    font = p.font.Font(None, 36)
+-    textHead = font.render("Game Settings:", True, p.Color("cornflowerblue"))
+-    textpos = textHead.get_rect()
+-    textpos.centerx = background.get_rect().centerx
+-
+-    text002 = font.render("Choose Difficulty: ", True, p.Color("cornflowerblue"))
+-    text002pos = text002.get_rect()
+-    text002pos.x = 20
+-    text002pos.y = 80
+-
+-    text003 = font.render("Good Luck!", True, p.Color("cornflowerblue"))
+-    text003pos = text003.get_rect()
+-    text003pos.midbottom = background.get_rect().midbottom
+-
+-    fontopt = p.font.Font(None, 26)
+-    opt1 = fontopt.render("Click -1- for a random component", True, p.Color("cornflowerblue"))
+-    opt1pos = opt1.get_rect()
+-    opt1pos.x = 50
+-    opt1pos.y = 130
+-
+-    opt2 = fontopt.render("Click -2- for a level 1 component", True, p.Color("cornflowerblue"))
+-    opt2pos = opt2.get_rect()
+-    opt2pos.x = 50
+-    opt2pos.y = 160
+-
+-    opt3 = fontopt.render("Click -3- for a level 2 component", True, p.Color("cornflowerblue"))
+-    opt3pos = opt3.get_rect()
+-    opt3pos.x = 50
+-    opt3pos.y = 190
+-
+-    opt4 = fontopt.render("Click -4- for a level 3 component", True, p.Color("cornflowerblue"))
+-    opt4pos = opt4.get_rect()
+-    opt4pos.x = 50
+-    opt4pos.y = 220
+-
+-    background.blit(text003, text003pos)
+-    background.blit(text002, text002pos)
+-    background.blit(textHead, textpos)
+-    background.blit(opt1, opt1pos)
+-    background.blit(opt2, opt2pos)
+-    background.blit(opt3, opt3pos)
+-    background.blit(opt4, opt4pos)
+-
+-    # Blit everything to the screen
+-    screen.blit(background, (0, 0))
+-    p.display.flip()
+-
+-    # Event loop
+-    while True:
+-        for event in p.event.get():
+-            if event.type == p.QUIT:
+-                return
+-
+-        screen.blit(background, (0, 0))
+-        p.display.flip()
++import numpy as np
+ 
+-
+-if __name__ == '__main__':
+-    main()
+\ No newline at end of file
++board = np.array([["br1", "bk1", "bb1", "bK", "bq", "bb2", "bk2", "br2"],
++                       ["bp1", "bp2", "bp3", "bp4", "bp5", "bp6", "bp7", "bp8"],
++                       ["---", "---", "---", "---", "---", "---", "---", "---"],
++                       ["---", "---", "---", "---", "---", "---", "---", "---"],
++                       ["---", "---", "---", "---", "---", "---", "---", "---"],
++                       ["---", "---", "---", "---", "---", "---", "---", "---"],
++                       ["wp1", "wp2", "wp3", "wp4", "wp5", "wp6", "wp7", "wp8"],
++                       ["wr1", "wk1", "wb1", "wK", "wq", "wb2", "wk2", "wr2"]])
++arrtest = np.array(["---"])
++arr = np.setdiff1d(board, arrtest)
++print(np.array2string.startswith(np.char.strip(arr), "b"))
++# print(arr.startswith(np.char.strip(arr), "b"))
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+new file mode 100644
+--- /dev/null	(date 1640383442949)
++++ b/README.md	(date 1640383442949)
+@@ -0,0 +1,29 @@
++# ChessEngine
++## general Info.
++I've started this project as a place to be challenged in, after I've been exposed to this kind of project.
++For sources I took help from two kind of articles:
++1) https://www.freecodecamp.org/news/simple-chess-ai-step-by-step-1d55a9266977/
++2) https://andreasstckl.medium.com/writing-a-chess-program-in-one-day-30daff4610ec
++
++and of course the wiki chess programming page:
++https://www.chessprogramming.org/Main_Page
++
++## Implementaion:
++I used python with two main packages:   
++- numpy
++- pygame 
++
++I ran into a guy who used this package GUI for the same project exect, so I took help from his code guide building the interface and it was defenatlly a kick for the start.
++You visit his youtube channel at this link: https://www.youtube.com/channel/UCaEohRz5bPHywGBwmR18Qww
++
++p.s In the next step i would like to move to a more comfturble GUI workframe.
++
++## TODO
++At current point, the engine able to play one on one game and allows the player choose the opponents level rank from 0 to 4
++where -0- replies a randome player, -1- one step forward computing engine, ... , -4- four steps computing ahead.
++
++My next steps would be:
++1) changing engine computing implementation, so he won't stop thinking between each turn.
++2) reboosting algorithm to be more efficient.
++3) add strategies to engine evaluation position method.
++4) add annimation and more detailed interface.
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"357ec854-a3c7-4a08-bfb0-d9265a405be7\" name=\"Changes\" comment=\"\">\n      <change afterPath=\"$PROJECT_DIR$/.idea/other.xml\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/Assignments\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/ChessEngine.iml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/ChessEngine.iml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/chess/chessEngine.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/chess/chessEngine.py\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/chess/chessGame.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/chess/chessGame.py\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Python Script\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"GitSEFilterConfiguration\">\n    <file-type-list>\n      <filtered-out-file-type name=\"LOCAL_BRANCH\" />\n      <filtered-out-file-type name=\"REMOTE_BRANCH\" />\n      <filtered-out-file-type name=\"TAG\" />\n      <filtered-out-file-type name=\"COMMIT_BY_MESSAGE\" />\n    </file-type-list>\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectId\" id=\"21P2sXTkQAhnXMATdRKOOMEq7wE\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">\n    <property name=\"RunOnceActivity.OpenProjectViewOnStart\" value=\"true\" />\n    <property name=\"RunOnceActivity.ShowReadmeOnStart\" value=\"true\" />\n    <property name=\"SHARE_PROJECT_CONFIGURATION_FILES\" value=\"true\" />\n    <property name=\"WebServerToolWindowFactoryState\" value=\"false\" />\n    <property name=\"full.screen.before.presentation.mode\" value=\"false\" />\n    <property name=\"last_opened_file_path\" value=\"$PROJECT_DIR$\" />\n    <property name=\"settings.editor.selected.configurable\" value=\"com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable\" />\n  </component>\n  <component name=\"RecentsManager\">\n    <key name=\"CopyFile.RECENT_KEYS\">\n      <recent name=\"$PROJECT_DIR$/chess\" />\n    </key>\n  </component>\n  <component name=\"RunManager\" selected=\"Python.chessGame\">\n    <configuration default=\"true\" type=\"PythonConfigurationType\" factoryName=\"Python\">\n      <module name=\"ChessEngine\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"\" />\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <EXTENSION ID=\"PythonCoverageRunConfigurationExtension\" runner=\"coverage.py\" />\n      <option name=\"SCRIPT_NAME\" value=\"\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"true\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <configuration name=\"boardRepres\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\n      <module name=\"ChessEngine\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <EXTENSION ID=\"PythonCoverageRunConfigurationExtension\" runner=\"coverage.py\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/boardRepres.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <configuration name=\"chessGame\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\n      <module name=\"ChessEngine\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/chess\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <EXTENSION ID=\"PythonCoverageRunConfigurationExtension\" runner=\"coverage.py\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/chess/chessGame.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <configuration name=\"main\" type=\"PythonConfigurationType\" factoryName=\"Python\" nameIsGenerated=\"true\">\n      <module name=\"ChessEngine\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <EXTENSION ID=\"PythonCoverageRunConfigurationExtension\" runner=\"coverage.py\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/main.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <configuration name=\"scratch\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\n      <module name=\"ChessEngine\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/chess\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <EXTENSION ID=\"PythonCoverageRunConfigurationExtension\" runner=\"coverage.py\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/chess/scratch.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"true\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <recent_temporary>\n      <list>\n        <item itemvalue=\"Python.chessGame\" />\n        <item itemvalue=\"Python.scratch\" />\n        <item itemvalue=\"Python.boardRepres\" />\n      </list>\n    </recent_temporary>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"357ec854-a3c7-4a08-bfb0-d9265a405be7\" name=\"Changes\" comment=\"\" />\n      <created>1637828608721</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1637828608721</updated>\n      <workItem from=\"1637828610881\" duration=\"168000\" />\n      <workItem from=\"1638127124991\" duration=\"9459000\" />\n      <workItem from=\"1638166858767\" duration=\"6325000\" />\n      <workItem from=\"1638177387427\" duration=\"772000\" />\n      <workItem from=\"1638209170728\" duration=\"1317000\" />\n      <workItem from=\"1638250446980\" duration=\"2674000\" />\n      <workItem from=\"1638270387500\" duration=\"25482000\" />\n      <workItem from=\"1638367651031\" duration=\"15528000\" />\n      <workItem from=\"1638437111451\" duration=\"1522000\" />\n      <workItem from=\"1638702897856\" duration=\"731000\" />\n      <workItem from=\"1638783937067\" duration=\"766000\" />\n      <workItem from=\"1638820467468\" duration=\"63000\" />\n      <workItem from=\"1639080601039\" duration=\"1261000\" />\n      <workItem from=\"1639152109828\" duration=\"34439000\" />\n      <workItem from=\"1639315218553\" duration=\"828000\" />\n      <workItem from=\"1639349803907\" duration=\"1384000\" />\n      <workItem from=\"1639574829616\" duration=\"10289000\" />\n      <workItem from=\"1639604056642\" duration=\"5835000\" />\n      <workItem from=\"1639632382741\" duration=\"8005000\" />\n    </task>\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n  <component name=\"XDebuggerManager\">\n    <breakpoint-manager>\n      <breakpoints>\n        <line-breakpoint enabled=\"true\" suspend=\"THREAD\" type=\"python-line\">\n          <url>file://$PROJECT_DIR$/chess/chessEngine.py</url>\n          <line>171</line>\n          <option name=\"timeStamp\" value=\"40\" />\n        </line-breakpoint>\n      </breakpoints>\n      <default-breakpoints>\n        <breakpoint type=\"python-exception\">\n          <properties notifyOnTerminate=\"true\" exception=\"BaseException\">\n            <option name=\"notifyOnTerminate\" value=\"true\" />\n          </properties>\n        </breakpoint>\n      </default-breakpoints>\n    </breakpoint-manager>\n  </component>\n  <component name=\"com.intellij.coverage.CoverageDataManagerImpl\">\n    <SUITE FILE_PATH=\"coverage/ChessEngine$main.coverage\" NAME=\"main Coverage Results\" MODIFIED=\"1638127364056\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"true\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$\" />\n    <SUITE FILE_PATH=\"coverage/ChessEngine$scratch.coverage\" NAME=\"scratch Coverage Results\" MODIFIED=\"1639604094071\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"true\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/chess\" />\n    <SUITE FILE_PATH=\"coverage/ChessEngine$chessGame.coverage\" NAME=\"chessGame Coverage Results\" MODIFIED=\"1639646318819\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"true\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/chess\" />\n    <SUITE FILE_PATH=\"coverage/ChessEngine$boardRepres.coverage\" NAME=\"boardRepres Coverage Results\" MODIFIED=\"1638127540027\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"true\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 3c68e0239afad8bfc5afa3b320c8a46f1c215319)
++++ b/.idea/workspace.xml	(date 1640383363632)
+@@ -2,12 +2,13 @@
+ <project version="4">
+   <component name="ChangeListManager">
+     <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="">
+-      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/Assignments" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/ChessEngine.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ChessEngine.iml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/other.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/chess/Computation.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/Computation.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/chess/chessEngine.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/chessEngine.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/chess/chessGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/chessGame.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/chess/scratch.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess/scratch.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -56,28 +57,6 @@
+     </key>
+   </component>
+   <component name="RunManager" selected="Python.chessGame">
+-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+-      <module name="ChessEngine" />
+-      <option name="INTERPRETER_OPTIONS" value="" />
+-      <option name="PARENT_ENVS" value="true" />
+-      <envs>
+-        <env name="PYTHONUNBUFFERED" value="1" />
+-      </envs>
+-      <option name="SDK_HOME" value="" />
+-      <option name="WORKING_DIRECTORY" value="" />
+-      <option name="IS_MODULE_SDK" value="false" />
+-      <option name="ADD_CONTENT_ROOTS" value="true" />
+-      <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+-      <option name="SCRIPT_NAME" value="" />
+-      <option name="PARAMETERS" value="" />
+-      <option name="SHOW_COMMAND_LINE" value="true" />
+-      <option name="EMULATE_TERMINAL" value="false" />
+-      <option name="MODULE_MODE" value="false" />
+-      <option name="REDIRECT_INPUT" value="false" />
+-      <option name="INPUT_FILE" value="" />
+-      <method v="2" />
+-    </configuration>
+     <configuration name="boardRepres" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="ChessEngine" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+@@ -200,7 +179,18 @@
+       <workItem from="1639349803907" duration="1384000" />
+       <workItem from="1639574829616" duration="10289000" />
+       <workItem from="1639604056642" duration="5835000" />
+-      <workItem from="1639632382741" duration="8005000" />
++      <workItem from="1639632382741" duration="8603000" />
++      <workItem from="1639663725737" duration="2534000" />
++      <workItem from="1639681287046" duration="21094000" />
++      <workItem from="1639855026546" duration="2000" />
++      <workItem from="1639940223199" duration="6000" />
++      <workItem from="1639953074406" duration="4488000" />
++      <workItem from="1639983039780" duration="6898000" />
++      <workItem from="1639996921873" duration="533000" />
++      <workItem from="1639998906478" duration="4244000" />
++      <workItem from="1640108061242" duration="683000" />
++      <workItem from="1640158833450" duration="1297000" />
++      <workItem from="1640361260761" duration="3937000" />
+     </task>
+     <servers />
+   </component>
+@@ -222,9 +212,9 @@
+     <breakpoint-manager>
+       <breakpoints>
+         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+-          <url>file://$PROJECT_DIR$/chess/chessEngine.py</url>
+-          <line>171</line>
+-          <option name="timeStamp" value="40" />
++          <url>file://$PROJECT_DIR$/chess/chessGame.py</url>
++          <line>71</line>
++          <option name="timeStamp" value="1" />
+         </line-breakpoint>
+       </breakpoints>
+       <default-breakpoints>
+@@ -239,7 +229,7 @@
+   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+     <SUITE FILE_PATH="coverage/ChessEngine$main.coverage" NAME="main Coverage Results" MODIFIED="1638127364056" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+     <SUITE FILE_PATH="coverage/ChessEngine$scratch.coverage" NAME="scratch Coverage Results" MODIFIED="1639604094071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
+-    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1639646318819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
++    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1640382143829" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
+     <SUITE FILE_PATH="coverage/ChessEngine$boardRepres.coverage" NAME="boardRepres Coverage Results" MODIFIED="1638127540027" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/ChessEngine.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<module type=\"PYTHON_MODULE\" version=\"4\">\n  <component name=\"NewModuleRootManager\">\n    <content url=\"file://$MODULE_DIR$\">\n      <excludeFolder url=\"file://$MODULE_DIR$/venv\" />\n    </content>\n    <orderEntry type=\"inheritedJdk\" />\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\n  </component>\n  <component name=\"PyDocumentationSettings\">\n    <option name=\"renderExternalDocumentation\" value=\"true\" />\n  </component>\n</module>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/ChessEngine.iml b/.idea/ChessEngine.iml
+--- a/.idea/ChessEngine.iml	(revision 3c68e0239afad8bfc5afa3b320c8a46f1c215319)
++++ b/.idea/ChessEngine.iml	(date 1639983369485)
+@@ -7,7 +7,4 @@
+     <orderEntry type="inheritedJdk" />
+     <orderEntry type="sourceFolder" forTests="false" />
+   </component>
+-  <component name="PyDocumentationSettings">
+-    <option name="renderExternalDocumentation" value="true" />
+-  </component>
+ </module>
+\ No newline at end of file
+Index: .idea/other.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"PySciProjectComponent\">\n    <option name=\"PY_SCI_VIEW\" value=\"true\" />\n    <option name=\"PY_SCI_VIEW_SUGGESTED\" value=\"true\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/other.xml b/.idea/other.xml
+--- a/.idea/other.xml	(revision 3c68e0239afad8bfc5afa3b320c8a46f1c215319)
++++ b/.idea/other.xml	(date 1639983369505)
+@@ -1,7 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="PySciProjectComponent">
+-    <option name="PY_SCI_VIEW" value="true" />
+     <option name="PY_SCI_VIEW_SUGGESTED" value="true" />
+   </component>
+ </project>
+\ No newline at end of file
