@@ -16,8 +16,8 @@ And also the wiki chess programming page:
 **NumPy** <br />
 `python3 -m pip install -U numpy --user` <br />
 3) Run command - <br />
-`sudo chmod +x play.sh` <br />
-`./play.sh` <br />
+`export PYTHONPATH=.` <br />
+`python3 Chess/ChessGame.py` <br />
 
 ### Implementaion :
 I used python with two main packages:   
