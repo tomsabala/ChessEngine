@@ -1,12 +1,4 @@
-import numba as nb
-
-# spec = [("startLoc", ),
-#         ("endLoc", ),
-#         ("board", ),
-#         ("enPassant", bool),
-#         ("castling", bool)]
-# @nb.experimental.jitclass(spec=spec)
-
+import numpy as np
 
 class Move:
     """
@@ -17,9 +9,8 @@ class Move:
     rowToRank = {v: k for k, v in rankToRow.items()}
     rankToCol = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
     colToRank = {v: k for k, v in rankToCol.items()}
-
     # initial a new move
-    def __init__(self, startLoc: tuple, endLoc: tuple, board: list, enPassant=False, castling=False) -> None:
+    def __init__(self, startLoc: tuple, endLoc: tuple, board: np.ndarray, enPassant=False, castling=False) -> None:
         # where from
         self.rowStart = startLoc[0]
         self.colStart = startLoc[1]
@@ -58,7 +49,9 @@ class Move:
         self.moveID = 1000000 * self.promotion + 100000 * self.castling + 10000 * self.enPassant + \
                       1000 * self.rowStart + 100 * self.colStart + 10 * self.rowEnd + 1 * self.colEnd
 
-    def isEnPassant(self, board: list) -> bool:
+
+
+    def isEnPassant(self, board: np.ndarray) -> bool:
         try:
             if self.rowStart == 3:
                 if board[self.rowStart][self.colStart].isWhitePawn():
@@ -74,7 +67,7 @@ class Move:
             pass
         return False
 
-    def isCastling(self, board: list) -> bool:
+    def isCastling(self, board: np.ndarray) -> bool:
         from Chess.ChessPieces.Rook import Rook
         try:
             if board[self.rowStart][self.colStart].isWhiteKing() and self.rowEnd == self.rowStart == 7:

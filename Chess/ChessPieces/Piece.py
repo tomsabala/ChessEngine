@@ -1,8 +1,9 @@
 import Chess.Move
+import numpy as np
 
 
 class Piece:
-    def __init__(self, board: list, pos: tuple, name: str, white: bool) -> None:
+    def __init__(self, board: np.ndarray, pos: tuple, name: str, white: bool) -> None:
         self.board = board
         self.pos = pos
         self.name = name

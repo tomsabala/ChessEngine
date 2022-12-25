@@ -3,10 +3,12 @@ This class is the main class responsible for running the game, setting the game 
 and receive input from program.
 """
 import pygame as p
-import Chess.Move
+import Move
 import ChessEngine as chs
 import Computation as cmp
-from Chess.ChessPieces.King import King
+from ChessPieces.King import King
+from EndGame import EndGame
+
 p.init()  # initialize pygame
 '''
 initialize board sizes and square size
@@ -50,7 +52,7 @@ def main(setOpt, engine):
 
     """ creating an AI computer and an endGame checker """
     AIComputer = cmp.Computation(setOpt - 1)
-    endGame = chs.EndGame(engine)
+    endGame = EndGame(engine)
 
     """ tracking game driver """
     running = True  # boolean obj. game state end or not
@@ -90,12 +92,13 @@ def main(setOpt, engine):
                             square_selected = tuple()  # restart
                             curr_move = []
                         elif len(curr_move) == 2:  # second click
-                            move = Chess.Move.Move(curr_move[0], curr_move[1], engine.board)  # create move
-                            if move in validMoves:  # if move is legal
-                                print(move.getChessNotation())  # print notation
-                                Notations.append(move.getChessNotation())
-                                engine.makeMove(move)  # make move
-                                moveMade = True
+                            move = Move.Move(curr_move[0], curr_move[1], engine.board)  # create move
+                            for m in validMoves:
+                                if move.moveID == m.moveID:
+                                    print(move.getChessNotation())  # print notation
+                                    Notations.append(move.getChessNotation())
+                                    engine.makeMove(move)  # make move
+                                    moveMade = True
                             square_selected = tuple()
                             curr_move = []
                 elif e.type == p.KEYDOWN:  # keyboard click
@@ -183,11 +186,11 @@ def applyNotations(engine, notations):
         if count == 273:
             print("x")
         count += 1
-        rowStart = Chess.Move.Move.rankToRow[note[1]]
-        colStart = Chess.Move.Move.rankToCol[note[0]]
-        rowEnd = Chess.Move.Move.rankToRow[note[3]]
-        colEnd = Chess.Move.Move.rankToCol[note[2]]
-        move = Chess.Move.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
+        rowStart = Move.Move.rankToRow[note[1]]
+        colStart = Move.Move.rankToCol[note[0]]
+        rowEnd = Move.Move.rankToRow[note[3]]
+        colEnd = Move.Move.rankToCol[note[2]]
+        move = Move.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
         engine.makeMove(move)
         white_pos, black_pos = engine.kingPos[True], engine.kingPos[False]
         white_King = engine.board[white_pos[0]][white_pos[1]]
@@ -463,11 +466,11 @@ def simulate(engine, notations):
                     break
                 note = notations[count]
                 count += 1
-                rowStart = Chess.Move.Move.rankToRow[note[1]]
-                colStart = Chess.Move.Move.rankToCol[note[0]]
-                rowEnd = Chess.Move.Move.rankToRow[note[3]]
-                colEnd = Chess.Move.Move.rankToCol[note[2]]
-                move = Chess.Move.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
+                rowStart = Move.Move.rankToRow[note[1]]
+                colStart = Move.Move.rankToCol[note[0]]
+                rowEnd = Move.Move.rankToRow[note[3]]
+                colEnd = Move.Move.rankToCol[note[2]]
+                move = Move.Move((rowStart, colStart), (rowEnd, colEnd), engine.board)
                 engine.makeMove(move)
                 drawBoard(screen)  # display board
                 drawPieces(engine.board, screen)  # display pieces

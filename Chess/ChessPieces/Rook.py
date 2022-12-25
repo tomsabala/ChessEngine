@@ -1,9 +1,10 @@
 from Chess.Move import Move
 from Chess.ChessPieces.Piece import Piece
+import numpy as np
 
 
 class Rook(Piece):
-    def __init__(self, board: list, pos: tuple, name: str, white: bool) -> None:
+    def __init__(self, board: np.ndarray, pos: tuple, name: str, white: bool) -> None:
         super(Rook, self).__init__(board=board, pos=pos, name=name, white=white)
 
     def getValidMoves(self) -> list:
@@ -52,7 +53,7 @@ class Rook(Piece):
             super(Rook, self).undoMove(move=move)
 
 
-def main(board: list, white: bool) -> list:
+def main(board: np.ndarray, white: bool) -> list:
     if white:
         rook1 = Rook(board=board, pos=(7, 0), name="wr1", white=True)
         rook2 = Rook(board=board, pos=(7, 7), name="wr2", white=True)

@@ -1,9 +1,10 @@
 from Chess.Move import Move
 from Chess.ChessPieces.Piece import Piece
+import numpy as np
 
 
 class Bishop(Piece):
-    def __init__(self, board: list, pos: tuple, name: str, white: bool) -> None:
+    def __init__(self, board: np.ndarray, pos: tuple, name: str, white: bool) -> None:
         super(Bishop, self).__init__(board=board, pos=pos, name=name, white=white)
 
     def getValidMoves(self) -> list:
@@ -31,7 +32,7 @@ class Bishop(Piece):
         return validMoves
 
 
-def main(board: list, white: bool) -> list:
+def main(board: np.ndarray, white: bool) -> list:
     if white:
         bishop1 = Bishop(board=board, pos=(7, 2), name="wb1", white=True)
         bishop2 = Bishop(board=board, pos=(7, 5), name="wb2", white=True)

@@ -2,10 +2,11 @@ from Chess.ChessPieces.Bishop import Bishop
 from Chess.ChessPieces.Rook import Rook
 from Chess.ChessPieces.Piece import Piece
 from Chess.Move import Move
+import numpy as np
 
 
 class Queen(Piece):
-    def __init__(self, board: list, pos: tuple, name: str, white: bool) -> None:
+    def __init__(self, board: np.ndarray, pos: tuple, name: str, white: bool) -> None:
         super(Queen, self).__init__(board=board, pos=pos, name=name, white=white)
         self.bishopQ = Bishop(board=board, pos=pos, name=name, white=white)
         self.rookQ = Rook(board=board, pos=pos, name=name, white=white)
@@ -28,7 +29,7 @@ class Queen(Piece):
         self.bishopQ.undoMove(move=move)
 
 
-def main(board: list, white: bool) -> Queen:
+def main(board: np.ndarray, white: bool) -> Queen:
     color2prop = {True: ("w", 7), False: ("b", 0)}
     queen = Queen(board=board,
                   pos=(color2prop[white][1], 4),

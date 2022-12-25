@@ -1,11 +1,12 @@
-from Chess.ChessPieces.Piece import Piece
+from . import Piece
 from Chess.ChessPieces.Knight import Knight
 from Chess.ChessPieces.Rook import Rook
 from Chess.Move import Move
+import numpy as np
 
 
-class King(Piece):
-    def __init__(self, board: list, pos: tuple, name: str, white: bool) -> None:
+class King(Piece.Piece):
+    def __init__(self, board: np.ndarray, pos: tuple, name: str, white: bool) -> None:
         super(King, self).__init__(board=board, pos=pos, name=name, white=white)
 
     def getValidMoves(self, castleDict: dict) -> list:
@@ -150,7 +151,7 @@ class King(Piece):
         return False
 
 
-def main(board: list, white: bool) -> King:
+def main(board: np.ndarray, white: bool) -> King:
     color2prop = {True: ("w", 7), False: ("b", 0)}
     king = King(board=board,
                   pos=(color2prop[white][1], 3),

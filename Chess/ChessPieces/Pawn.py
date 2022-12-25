@@ -2,10 +2,11 @@ from Chess.Move import Move
 from Chess.ChessPieces.Bishop import Bishop
 from Chess.ChessPieces.Rook import Rook
 from Chess.ChessPieces.Piece import Piece
+import numpy as np
 
 
 class Pawn(Piece):
-    def __init__(self, board: list, pos: tuple, name: str, white: bool) -> None:
+    def __init__(self, board: np.ndarray, pos: tuple, name: str, white: bool) -> None:
         super(Pawn, self).__init__(board=board, pos=pos, name=name, white=white)
         self.isPromoted = False
         self.rook_bishop = None
@@ -106,7 +107,7 @@ class Pawn(Piece):
             self.rook_bishop[1].undoMove(move=move)
 
 
-def main(board: list, white: bool) -> list:
+def main(board: np.ndarray, white: bool) -> list:
     color2prop = {True: ("w", 6), False: ("b", 1)}
     pawns = []
 

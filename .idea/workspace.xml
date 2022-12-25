@@ -1,34 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="357ec854-a3c7-4a08-bfb0-d9265a405be7" name="Changes" comment="rm main.py">
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/Bishop.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/King.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/Knight.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/Pawn.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/Piece.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/Queen.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/ChessPieces/Rook.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Chess/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Chess/EndGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ChessEngine.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ChessEngine.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Computation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Computation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/bX.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/bX.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/bb.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/bb.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/bk.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/bk.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/bp.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/bp.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/bq.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/bq.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/br.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/br.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/chessEngineL43.gif" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/chessEngineL43.gif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/wX.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/wX.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/wb.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/wb.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/wk.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/wk.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/wp.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/wp.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/wq.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/wq.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/Images/wr.png" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Images/wr.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Move.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/chessEngine.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessEngine.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess/chessGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessEngine.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessEngine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/Bishop.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/Bishop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/King.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/King.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/Knight.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/Knight.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/Pawn.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/Pawn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/Piece.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/Piece.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/Queen.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/Queen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/ChessPieces/Rook.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/ChessPieces/Rook.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chess/Move.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chess/Move.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,9 +58,14 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/tomsabala/PycharmProjects/ChessEngine/Chess/Pieces&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/tomsabala/לימודים/שנה ג/סמסטר א/Numerical analysis/HW1&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -104,6 +98,47 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="__init__ (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="ChessEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Chess" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Chess/__init__.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="ChessEngine" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Chess/ChessPieces" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Chess/ChessPieces/__init__.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="ChessEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -120,28 +155,6 @@
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="boardRepres" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="ChessEngine" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/boardRepres.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -216,7 +229,8 @@
     </configuration>
     <list>
       <item itemvalue="Python.main" />
-      <item itemvalue="Python.boardRepres" />
+      <item itemvalue="Python.__init__" />
+      <item itemvalue="Python.__init__ (1)" />
       <item itemvalue="Python.ChessGame" />
       <item itemvalue="Python.scratch" />
       <item itemvalue="Python.scratch002" />
@@ -224,9 +238,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ChessGame" />
+        <item itemvalue="Python.__init__ (1)" />
+        <item itemvalue="Python.__init__" />
         <item itemvalue="Python.scratch" />
         <item itemvalue="Python.scratch002" />
-        <item itemvalue="Python.boardRepres" />
       </list>
     </recent_temporary>
   </component>
@@ -298,7 +313,21 @@
       <workItem from="1665735021349" duration="8055000" />
       <workItem from="1665843630445" duration="8451000" />
       <workItem from="1665992761746" duration="12881000" />
-      <workItem from="1666100955062" duration="1280000" />
+      <workItem from="1666100955062" duration="1518000" />
+      <workItem from="1666112196114" duration="4904000" />
+      <workItem from="1666122471213" duration="38000" />
+      <workItem from="1666259780698" duration="6441000" />
+      <workItem from="1666699176429" duration="621000" />
+      <workItem from="1666730319190" duration="964000" />
+      <workItem from="1666875409410" duration="4552000" />
+      <workItem from="1666959485770" duration="915000" />
+      <workItem from="1667131811048" duration="111000" />
+      <workItem from="1667162789985" duration="1215000" />
+      <workItem from="1667196619467" duration="2671000" />
+      <workItem from="1667293301634" duration="1041000" />
+      <workItem from="1667459100872" duration="19000" />
+      <workItem from="1670607627244" duration="4404000" />
+      <workItem from="1671971750474" duration="604000" />
     </task>
     <task id="LOCAL-00001" summary="added documentation">
       <created>1640383644950</created>
@@ -430,23 +459,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Chess/ChessGame.py</url>
-          <line>195</line>
-          <option name="timeStamp" value="118" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Chess/ChessGame.py</url>
-          <line>197</line>
-          <option name="timeStamp" value="119" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Chess/ChessGame.py</url>
-          <line>183</line>
-          <option name="timeStamp" value="120" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Chess/ChessGame.py</url>
-          <line>415</line>
-          <option name="timeStamp" value="122" />
+          <line>94</line>
+          <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -459,10 +473,10 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/ChessEngine$ChessGame.coverage" NAME="ChessGame Coverage Results" MODIFIED="1666102152769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Chess" />
-    <SUITE FILE_PATH="coverage/ChessEngine$main.coverage" NAME="main Coverage Results" MODIFIED="1638127364056" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1652696876534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
-    <SUITE FILE_PATH="coverage/ChessEngine$scratch.coverage" NAME="scratch Coverage Results" MODIFIED="1640898686897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
     <SUITE FILE_PATH="coverage/ChessEngine$boardRepres.coverage" NAME="boardRepres Coverage Results" MODIFIED="1638127540027" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ChessEngine$ChessGame.coverage" NAME="ChessGame Coverage Results" MODIFIED="1671972352106" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Chess" />
+    <SUITE FILE_PATH="coverage/ChessEngine$scratch.coverage" NAME="scratch Coverage Results" MODIFIED="1640898686897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
+    <SUITE FILE_PATH="coverage/ChessEngine$chessGame.coverage" NAME="chessGame Coverage Results" MODIFIED="1652696876534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/chess" />
+    <SUITE FILE_PATH="coverage/ChessEngine$main.coverage" NAME="main Coverage Results" MODIFIED="1671971776346" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
