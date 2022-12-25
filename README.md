@@ -18,8 +18,8 @@ windows - `py -m pip install -U pygame --user` <br />
 linux - `python3 -m pip install -U numpy --user` <br />
 windows - `py -m pip install -U numpy --user` <br />
 4) Run command - <br />
-linux - `python3 ~/chess/chessGame.py` <br />
-windows - `py ~/chess/chessGame.py` <br />
+linux - `python3 ~/Chess/ChessGame.py` <br />
+windows - `py ~/Chess/ChessGame.py` <br />
 
 ### Implementaion :
 I used python with two main packages:   
