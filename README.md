@@ -12,14 +12,12 @@ And also the wiki chess programming page:
 1) Clone project to a directory on your pc.
 2) Install dependencies - <br />
 **pygame** <br />
-linux - `python3 -m pip install -U pygame --user` <br />
-windows - `py -m pip install -U pygame --user` <br />
+`python3 -m pip install -U pygame --user` <br />
 **NumPy** <br />
-linux - `python3 -m pip install -U numpy --user` <br />
-windows - `py -m pip install -U numpy --user` <br />
-4) Run command - <br />
-linux - `python3 ~/Chess/ChessGame.py` <br />
-windows - `py ~/Chess/ChessGame.py` <br />
+`python3 -m pip install -U numpy --user` <br />
+3) Run command - <br />
+`sudo chmod +x play.sh` <br />
+`./play.sh` <br />
 
 ### Implementaion :
 I used python with two main packages:   
